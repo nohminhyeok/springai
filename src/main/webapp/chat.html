@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>카카오톡 스타일 챗봇</title>
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background-color: #ececec;
+      font-family: 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif;
+    }
+
+    .chat-container {
+      max-width: 420px;
+      height: 700px;
+      margin: 30px auto;
+      background-color: #fff;
+      display: flex;
+      flex-direction: column;
+      border-radius: 12px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.2);
+      overflow: hidden;
+    }
+
+    .chat-header {
+      background-color: #ffe400;
+      padding: 14px;
+      text-align: center;
+      font-weight: bold;
+      font-size: 18px;
+      border-bottom: 1px solid #ccc;
+    }
+
+    .chat-messages {
+      flex: 1;
+      padding: 15px;
+      overflow-y: auto;
+    }
+
+    .message {
+      display: flex;
+      margin-bottom: 10px;
+      align-items: flex-end;
+    }
+
+    .message.bot {
+      justify-content: flex-start;
+    }
+
+    .message.user {
+      justify-content: flex-end;
+    }
+
+    .bubble {
+      max-width: 70%;
+      padding: 10px 14px;
+      border-radius: 18px;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    .bot .bubble {
+      background-color: #f1f1f1;
+      color: #333;
+      border-bottom-left-radius: 2px;
+    }
+
+    .user .bubble {
+      background-color: #ffe400;
+      color: #000;
+      border-bottom-right-radius: 2px;
+    }
+
+    .chat-input {
+      display: flex;
+      border-top: 1px solid #ccc;
+      padding: 10px;
+      background-color: #fff;
+    }
+
+    #user-input {
+      flex: 1;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 20px;
+      font-size: 14px;
+      outline: none;
+    }
+
+    #send-btn {
+      margin-left: 8px;
+      background-color: #ffe400;
+      border: none;
+      padding: 0 16px;
+      border-radius: 20px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    .profile-icon {
+      width: 32px;
+      height: 32px;
+      background-color: #ddd;
+      border-radius: 50%;
+      margin-right: 8px;
+    }
+  </style>
+</head>
+<body>
+  <div class="chat-container">
+    <div class="chat-header">챗봇</div>
+    <div class="chat-messages" id="chat-messages"></div>
+    <form class="chat-input" id="chat-form">
+      <input type="text" id="user-input" placeholder="메시지를 입력하세요..." autocomplete="off" />
+      <button type="submit" id="send-btn">전송</button>
+    </form>
+  </div>
+
+  <script>
+    $(function () {
+      $("#chat-form").submit(function (e) {
+        e.preventDefault();
+        const message = $("#user-input").val().trim();
+        if (!message) return;
+
+        // 사용자 메시지 표시
+        appendMessage('user', message);
+        $("#user-input").val("");
+        scrollToBottom();
+
+        // AJAX 통신 (서버에 메시지 전송)
+        $.ajax({
+          url: "/chat", // 실제 서버 주소
+          method: "POST",
+          contentType: "application/json",
+          data: JSON.stringify({ "userMsg":message }),
+          success: function (res) { // API명세서에 문자열하나만 응답받는 형태이다
+            appendMessage('bot', res || "응답이 없습니다.");
+            scrollToBottom();
+          },
+          error: function () {
+            appendMessage('bot', "⚠️ 서버 오류 발생");
+            scrollToBottom();
+          }
+        });
+      });
+
+      function appendMessage(type, text) {
+        const bubble = `
+          <div class="message ${type}">
+            ${type === 'bot' ? '<div class="profile-icon"></div>' : ''}
+            <div class="bubble">${escapeHtml(text)}</div>
+          </div>`;
+        $("#chat-messages").append(bubble);
+      }
+
+      function scrollToBottom() {
+        const chatBox = $("#chat-messages");
+        chatBox.scrollTop(chatBox[0].scrollHeight);
+      }
+
+      function escapeHtml(text) {
+        return text.replace(/[&<>"']/g, function (m) {
+          return ({
+            '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;'
+          })[m];
+        });
+      }
+    });
+  </script>
+</body>
+</html>
