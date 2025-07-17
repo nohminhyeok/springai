@@ -1,11 +1,36 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.example.springai.mapper.ChatHistoryMapper">
-	<insert id="insertChat" >
-		INSERT INTO chat_history (
-		session_id, userMsg, aiReply
-		) VALUES (
-		#{sessionId}, #{userMsg}, #{aiReply}		
-		)
-	</insert>
+
+    <select id="findBySessionId" parameterType="string" resultType="com.example.springai.dto.ChatHistoryDto">
+        SELECT 
+            no,
+            id,
+            session_id AS sessionId,
+            user_msg AS userMsg,
+            ai_reply AS aiReply,
+            create_at AS createAt,
+            bookmark
+        FROM 
+            chat_history
+        WHERE 
+            session_id = #{sessionId}
+        ORDER BY 
+            create_at ASC
+    </select>
+
+    <update id="updateBookmark" parameterType="map">
+        UPDATE chat_history
+        SET bookmark = #{bookmark}
+        WHERE no = #{no}
+    </update>
+
+    <delete id="deleteChats">
+        DELETE FROM chat_history
+        WHERE no IN
+        <foreach item="no" collection="nos" open="(" separator="," close=")">
+            #{no}
+        </foreach>
+    </delete>
 </mapper>

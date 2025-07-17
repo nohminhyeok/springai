@@ -1,7 +1,9 @@
 package com.example.springai.service;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.ai.chat.messages.AssistantMessage;
 import org.springframework.ai.chat.messages.Message;
@@ -99,5 +101,16 @@ public class AiChatService {
 	public int insertChat(ChatHistoryDto chatHistoryDto) {
 		return chatHistoryMapper.insertChat(chatHistoryDto);
 	}
-	
+
+    public int updateBookmark(int no, int bookmark) {
+        Map<String, Object> param = new HashMap<>();
+        param.put("no", no);
+        param.put("bookmark", bookmark);
+        return chatHistoryMapper.updateBookmark(param);
+    }
+
+    public int deleteChats(List<Integer> nos) {
+        if(nos == null || nos.isEmpty()) return 0;
+        return chatHistoryMapper.deleteChats(nos) > 0 ? 1 : 0;
+    }
 }

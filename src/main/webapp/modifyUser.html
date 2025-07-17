@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>사용자 정보 수정</title>
+  <style>
+    body { font-family: Arial,sans-serif; margin: 20px; }
+    h1 { margin-bottom: 16px; }
+    label { display: block; margin-top: 14px; }
+    input { margin-left: 10px; }
+    button { margin-top: 20px; }
+  </style>
+</head>
+<body>
+  <h1>사용자 정보 수정</h1>
+  <form id="modifyForm">
+    <label>아이디: <input type="text" id="id" name="id" readonly></label>
+    <label>이메일: <input type="email" id="email" name="email"></label>
+    <button type="submit">수정</button>
+  </form>
+  <script>
+    window.addEventListener('DOMContentLoaded', ()=>{
+      fetch('/member/info', { credentials:'include' })
+        .then(res => res.json())
+        .then(user => {
+          document.getElementById('id').value = user.id ?? '';
+          document.getElementById('email').value = user.email ?? '';
+        });
+    });
+    document.getElementById('modifyForm').addEventListener('submit', function(e){
+      e.preventDefault();
+      const data = {
+        id: document.getElementById('id').value,
+        email: document.getElementById('email').value,
+      };
+      fetch('/user/modify', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(data)
+      })
+      .then(res => res.json())
+      .then(result => {
+        if(result === 1) alert('수정 완료');
+        else alert('수정 실패');
+      });
+    });
+  </script>
+</body>
+</html>

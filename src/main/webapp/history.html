@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <title>내 대화목록</title>
+  <style>
+    body { font-family:Arial,sans-serif; margin:20px; }
+    h1 { margin-bottom:10px; }
+    table { width:100%; border-collapse:collapse; margin-top:10px; }
+    th, td { border:1px solid #ddd; padding:8px; text-align:left; }
+    th { background:#f2f2f2; }
+    .btn-back { margin-bottom:10px; padding:6px 12px; background:#0b3d2e; color:#fff; border:none; cursor:pointer; }
+    .switch { position: relative; display: inline-block; width: 38px; height: 22px; vertical-align: middle;}
+    .switch input { opacity: 0; width: 0; height: 0;}
+    .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; border-radius: 22px; transition: .4s;}
+    .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 2px; bottom: 2px; background-color: white; border-radius: 50%; transition: .4s;}
+    input:checked + .slider { background-color: #111; }
+    input:checked + .slider:before { transform: translateX(16px);}
+    .paging { margin-top:15px;}
+    .paging button { margin-right:3px; padding:2px 8px;}
+    .paging .current { background:#111; color:#fff; }
+    .delete-btn { background:#111; color:#fff; border:none; padding:5px 12px; margin-bottom:7px;}
+    .tag-btn { margin-left:8px; background:#eee; border:none; padding:4px 8px; border-radius:4px;}
+    .radio-btn {margin-right: 8px;}
+  </style>
+</head>
+<body>
+  <button class="btn-back" onclick="location.href='/chat.html'">채팅 화면으로</button>
+  <h1>내 대화목록</h1>
+  <button class="delete-btn" onclick="deleteSelected()">선택 삭제</button>
+  <span style="float:right; font-size:1rem;">
+    사용자: <button type="button" onClick="location.href='/modifyUser.html'"><b id="userIdLabel"></b></button>
+  </span>
+  <div style="margin:14px 0 6px 0;">
+    <label class="radio-btn"><input type="radio" name="mode" value="all" checked onchange="switchMode()"> 전체보기</label>
+    <label class="radio-btn"><input type="radio" name="mode" value="fav" onchange="switchMode()"> 즐겨찾기</label>
+  </div>
+  <table>
+    <thead>
+      <tr>
+        <th><input type="checkbox" id="chkAll" onclick="toggleAll(this)"></th>
+        <th>날짜/시간</th>
+        <th>세션 ID</th>
+        <th>유저 질문</th>
+        <th>AI응답</th>
+        <th>즐겨찾기</th>
+        <th>#</th>
+      </tr>
+    </thead>
+    <tbody id="historyBody">
+      <tr><td colspan="7">불러오는 중...</td></tr>
+    </tbody>
+  </table>
+  <div class="paging" id="paging"></div>
+
+  <script>
+    let currentPage = 1;
+    const pageSize = 5;
+    let fullList = []; // 전체 데이터
+    let mode = 'all';  // 'all' or 'fav'
+
+    window.addEventListener('DOMContentLoaded', ()=>{
+      fetch('/chat/history', { credentials:'include' })
+        .then(res => res.json())
+        .then(list => {
+          if (list.length > 0) {
+            document.getElementById('userIdLabel').textContent = list[0].id;
+          } else {
+            document.getElementById('userIdLabel').textContent = '';
+          }
+          fullList = list;
+          renderTable(getFilteredList(), 1);
+          renderPaging(getFilteredList().length, 1);
+        });
+    });
+
+    function getFilteredList() {
+      return mode === 'fav' ? fullList.filter(x => x.bookmark == 1) : fullList;
+    }
+
+    function renderTable(list, page) {
+      const tb = document.getElementById('historyBody');
+      tb.innerHTML = '';
+      const start = (page-1)*pageSize, end = page*pageSize;
+      const viewList = list.slice(start, end);
+
+      if (!viewList.length) {
+        tb.innerHTML = '<tr><td colspan="7">저장된 대화가 없습니다.</td></tr>';
+        return;
+      }
+      viewList.forEach((item, idx) => {
+        const tr = document.createElement('tr');
+        let time = '';
+        if (item.createAt) {
+          const d = new Date(item.createAt.replace(' ', 'T'));
+          time = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')} `
+                +`${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+        }
+        tr.innerHTML = `
+          <td><input type="checkbox" class="rowChk" data-no="${item.no}"></td>
+          <td>${time}</td>
+          <td>${item.sessionId ?? ''}</td>
+          <td>${item.userMsg ?? ''}</td>
+          <td>${item.aiReply ?? ''}</td>
+          <td>
+            <label class="switch">
+              <input type="checkbox" ${item.bookmark == 1 ? 'checked':''} onchange="toggleBookmark(${item.no})">
+              <span class="slider"></span>
+            </label>
+          </td>
+          <td>
+            <button class="tag-btn">#해시태그 추가</button>
+          </td>
+        `;
+        tb.appendChild(tr);
+      });
+    }
+
+    function renderPaging(total, cur) {
+      const pageCnt = Math.ceil(total / pageSize);
+      let html = '';
+      for(let i=1; i<=pageCnt; i++) {
+        html += `<button onclick="pageMove(${i})" class="${cur==i?'current':''}">${i}</button>`;
+      }
+      document.getElementById('paging').innerHTML = html;
+    }
+    function pageMove(i) {
+      currentPage = i;
+      renderTable(getFilteredList(), i);
+      renderPaging(getFilteredList().length, i);
+    }
+    function toggleAll(chk) {
+      document.querySelectorAll('.rowChk').forEach(e => e.checked = chk.checked);
+    }
+    function deleteSelected() {
+      const sel = Array.from(document.querySelectorAll('.rowChk')).filter(e=>e.checked).map(e=>+e.dataset.no);
+      if(!sel.length) return alert('선택된 항목이 없습니다.');
+
+      fetch('/chat/delete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ nos: sel })
+      })
+      .then(res => {
+        if (!res.ok) throw new Error('서버 오류');
+        return res.json();
+      })
+      .then(result => {
+        if(result === 1) {
+          fullList = fullList.filter(x => !sel.includes(x.no));
+          const filtered = getFilteredList();
+          const maxPage = Math.max(1, Math.ceil(filtered.length / pageSize));
+          currentPage = Math.min(currentPage, maxPage);
+          renderTable(filtered, currentPage);
+          renderPaging(filtered.length, currentPage);
+        } else {
+          alert('삭제 실패');
+        }
+      })
+      .catch(e => {
+        alert('네트워크 오류');
+      });
+    }
+    function toggleBookmark(no) {
+      const idx = fullList.findIndex(x => x.no == no);
+      if (idx === -1) return;
+      const item = fullList[idx];
+      const newBookmark = item.bookmark == 1 ? 0 : 1;
+      fetch('/chat/bookmark', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ no: item.no, bookmark: newBookmark })
+      })
+      .then(res => {
+        if (!res.ok) throw new Error('서버 오류');
+        return res.json();
+      })
+      .then(result => {
+        if(result === 1) {
+          item.bookmark = newBookmark;
+          renderTable(getFilteredList(), currentPage);
+          renderPaging(getFilteredList().length, currentPage);
+        } else {
+          alert('즐겨찾기 변경 실패');
+        }
+      })
+      .catch(e => {
+        alert('네트워크 오류');
+      });
+    }
+    function switchMode() {
+      mode = document.querySelector('input[name="mode"]:checked').value;
+      currentPage = 1;
+      const filtered = getFilteredList();
+      renderTable(filtered, currentPage);
+      renderPaging(filtered.length, currentPage);
+    }
+  </script>
+</body>
+</html>
