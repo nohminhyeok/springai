@@ -16,6 +16,7 @@ import com.example.springai.service.AiChatService;
 
 import jakarta.servlet.http.HttpSession;
 
+// REST API: AI 챗봇 관련 엔드포인트를 제공하는 컨트롤러
 @RestController
 public class AiChatController {
     private final AiChatService aiChatService;
@@ -24,6 +25,12 @@ public class AiChatController {
         this.aiChatService = aiChatService;
     }
     
+    /**
+     * AI 챗봇 대화 요청 (OpenAI 서버와 통신)
+     * @param chatHistoryDto 사용자 메시지
+     * @param session 세션
+     * @return AI 응답
+     */
     @PostMapping("/chat")
     public String chat(@RequestBody ChatHistoryDto chatHistoryDto, HttpSession session) {
         String userMsg = chatHistoryDto.getUserMsg();
@@ -32,7 +39,9 @@ public class AiChatController {
         return aiReply;
     }
 
-    // 대화 저장 버튼용 API
+    /**
+     * 대화 저장 버튼용 API (여러 대화 이력 저장)
+     */
     @PostMapping("/chat/save")
     public ResponseEntity<Void> saveConversation(
         @RequestBody List<ChatHistoryDto> history,
@@ -51,6 +60,9 @@ public class AiChatController {
         return ResponseEntity.ok().build();
     }
 
+    /**
+     * 현재 로그인한 사용자 ID 반환 (세션 체크용)
+     */
     @GetMapping("/whoami")
     public ResponseEntity<Map<String, String>> whoami(HttpSession session) {
         String id = (String) session.getAttribute("id");
@@ -60,6 +72,9 @@ public class AiChatController {
         return ResponseEntity.ok(Collections.singletonMap("id", id));
     }
     
+    /**
+     * 세션 기준 대화 이력 조회
+     */
     @GetMapping("/chat/history")
     public ResponseEntity<List<ChatHistoryDto>> getHistory(HttpSession session) {
         String sessionId = session.getId();
@@ -67,6 +82,9 @@ public class AiChatController {
         return ResponseEntity.ok(history);
     }
 
+    /**
+     * 로그인 ID 기준 전체 대화 이력 조회
+     */
     @GetMapping("/chat/history/by-id")
     public ResponseEntity<List<ChatHistoryDto>> getHistoryById(HttpSession session) {
         String id = (String) session.getAttribute("id");
@@ -77,6 +95,9 @@ public class AiChatController {
         return ResponseEntity.ok(history);
     }
     
+    /**
+     * 대화 즐겨찾기(북마크) 수정
+     */
     @PostMapping("/chat/bookmark")
     public int updateBookmark(@RequestBody Map<String, Object> body) {
         int no = (int) body.get("no");
@@ -84,6 +105,9 @@ public class AiChatController {
         return aiChatService.updateBookmark(no, bookmark);
     }
 
+    /**
+     * 대화 이력 삭제 (여러 개)
+     */
     @PostMapping("/chat/delete")
     public int deleteChats(@RequestBody Map<String, List<Integer>> body) {
         List<Integer> nos = body.get("nos");

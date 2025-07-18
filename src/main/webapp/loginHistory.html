@@ -12,9 +12,43 @@
     th { background:#f2f2f2; font-weight:bold; }
     .logout-btn { background:#f44336; color:#fff; padding:10px 20px; border:none; border-radius:4px; cursor:pointer; }
     .refresh-btn { background:#4CAF50; color:#fff; padding:10px 20px; border:none; border-radius:4px; cursor:pointer; margin-right:10px;}
+    header {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        background: #333;
+        color: #fff;
+        padding: 15px 0;
+        z-index: 1000;
+    }
+    header nav {
+        display: flex;
+        justify-content: center;
+        gap: 30px;
+    }
+    header nav a {
+        color: #fff;
+        text-decoration: none;
+        font-weight: bold;
+        transition: color 0.2s;
+    }
+    header nav a:hover {
+        color: #ffd700;
+    }
+    body { margin-top: 80px !important; }
   </style>
 </head>
 <body>
+  <header>
+      <nav>
+          <button id="logout-btn" style="background:none;border:none;color:#fff;font-weight:bold;cursor:pointer;">로그아웃</button>
+          <a href="/history.html">대화목록</a>
+          <a href="/loginHistory.html">로그인기록</a>
+          <a href="/chat.html">채팅하러 가기</a>
+          <a href="/hashtag.html">해시태그 순위</a>
+      </nav>
+  </header>
   <div class="header">
     <button type="button" onclick="location.href='/chat.html'">채팅하러 Go</button>
     <h1 id="title">내 로그인 이력</h1>
@@ -75,6 +109,11 @@
         .then(res=> res.ok && (alert('로그아웃 되었습니다.'), location.href='/login.html'))
         .catch(e=>{ console.error(e); alert('로그아웃 중 오류가 발생했습니다.'); });
     }
+
+    document.getElementById('logout-btn').onclick = function() {
+        fetch('/logout', { method: 'POST', credentials: 'include' })
+          .finally(() => window.location.href = '/login.html');
+    };
   </script>
 </body>
 </html>

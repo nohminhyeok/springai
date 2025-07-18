@@ -21,7 +21,7 @@ public class SessionListener implements HttpSessionListener {
     
     @Override
     public void sessionDestroyed(HttpSessionEvent se) {
-        String id        = (String) se.getSession().getAttribute("id");
+        String id = (String) se.getSession().getAttribute("id");
         String sessionId = se.getSession().getId();
         if (id != null) {
             loginHistoryService.recordLogout(id, sessionId);

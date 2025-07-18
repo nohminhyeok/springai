@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>해시태그 순위 & 대화목록</title>
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+  <style>
+    body { font-family: 'SUIT', 'Pretendard', 'Apple SD Gothic Neo', sans-serif; background:#fafbfc; margin:0; padding:30px;}
+    .tag-box { display:flex; gap:20px; margin:24px 0 36px 0; }
+    .tag-card { background:#fff; border-radius:12px; box-shadow:0 2px 10px rgba(0,0,0,0.06); padding:22px 32px; font-size:1.12rem; cursor:pointer; min-width:150px; transition:box-shadow .2s;}
+    .tag-card:hover { box-shadow:0 5px 16px rgba(0,0,0,0.13);}
+    .tag-card span { color:#999; font-size:0.95em;}
+    .left-pane { float:left; width:170px; background:#fff; border-radius:13px; padding:18px 0 18px 18px; min-height:400px; }
+    .left-pane ul { list-style:none; padding:0;}
+    .left-pane li { margin:0 0 12px 0; padding:6px 10px 6px 0; cursor:pointer; border-radius:7px;}
+    .left-pane .active, .left-pane li:hover { background:#4e5afe; color:#fff; font-weight:bold; }
+    .content-box { margin-left:200px; background:#fff; border-radius:14px; padding:34px 30px; min-height:300px;}
+    .section-title { font-size:1.32rem; font-weight:bold; margin-bottom:8px;}
+    .fire { color: #FF8C1A; font-size:1.2em; margin-right:5px; }
+    table { width:100%; border-collapse:collapse; margin-top:14px;}
+    th,td { border:1px solid #eee; padding:10px; text-align:left;}
+    th { background:#fafaf0; }
+    .hashtag-label { color:#4e5afe; font-weight:bold; margin-right:8px; }
+    .hashtag-list span { background:#f5f5fd; color:#4646a0; font-size:0.95em; border-radius:6px; padding:3px 10px; margin-right:3px;}
+  </style>
+</head>
+<body>
+<header>
+    <nav>
+        <button id="logout-btn" style="background:none;border:none;color:#fff;font-weight:bold;cursor:pointer;">로그아웃</button>
+        <a href="/history.html">대화목록</a>
+        <a href="/loginHistory.html">로그인기록</a>
+        <a href="/chat.html">채팅하러 가기</a>
+        <a href="/hashtag.html">해시태그 순위</a>
+    </nav>
+</header>
+<style>
+header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    background: #333;
+    color: #fff;
+    padding: 15px 0;
+    z-index: 1000;
+}
+header nav {
+    display: flex;
+    justify-content: center;
+    gap: 30px;
+}
+header nav a {
+    color: #fff;
+    text-decoration: none;
+    font-weight: bold;
+    transition: color 0.2s;
+}
+header nav a:hover {
+    color: #ffd700;
+}
+body { margin-top: 80px !important; }
+</style>
+  <div>
+    <div class="section-title"><span class="fire">🔥</span>인기 해시태그</div>
+    <div class="tag-box" id="popularTags"></div>
+  </div>
+
+  <div style="display:flex; gap:38px;">
+    <div class="left-pane">
+      <ul id="allTags"></ul>
+    </div>
+    <div class="content-box" style="flex:1;">
+      <div class="section-title" id="chatListTitle">대화 목록</div>
+      <table>
+        <thead>
+          <tr>
+            <th>사용자ID</th>
+            <th>질문</th>
+            <th>응답</th>
+            <th>날짜/시간</th>
+            <th>해시태그</th>
+          </tr>
+        </thead>
+        <tbody id="chatListBody">
+          <tr><td colspan="5" style="text-align:center;">좌측에서 해시태그를 선택하세요</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+<script>
+let allTags = [];      // [{tag:'#GPT4', count:12}, ...]
+let selectedTag = null;
+
+$(function() {
+  // 1. 인기 해시태그 조회
+  $.get('/hashtags/popular', function(data) {
+    // data = [{tag:'#GPT4', count:12}, ...]
+    let html = '';
+    data.forEach(t => {
+      html += `<div class="tag-card" onclick="selectTag('${t.tag}')">${t.tag}<br><span>${t.count}회 사용</span></div>`;
+    });
+    $('#popularTags').html(html);
+  });
+
+  // 2. 전체 해시태그 목록 조회 (좌측)
+  $.get('/hashtags/list', function(data) {
+    allTags = data; // [{tag:'#GPT4'}, ...]
+    let html = '<li class="active" onclick="selectTag(\'전체\')">#전체</li>';
+    data.forEach(t=>{
+      html += `<li onclick="selectTag('${t.tag}')">${t.tag}</li>`;
+    });
+    $('#allTags').html(html);
+    selectTag('전체'); // 기본 전체
+  });
+});
+
+// 3. 해시태그별 대화목록 조회
+window.selectTag = function(tag) {
+  selectedTag = tag;
+  // 좌측 active 효과
+  $('#allTags li').removeClass('active');
+  if(tag === '전체')
+    $('#allTags li').eq(0).addClass('active');
+  else
+    $('#allTags li').filter(function(){return $(this).text().trim()===tag}).addClass('active');
+
+  // 데이터 요청
+  let url = tag==='전체' ? '/chat/list/all' : `/chat/list/by-tag?tag=${encodeURIComponent(tag)}`;
+  $.get(url, function(data) {
+    // data = [{userId, userMsg, aiReply, createdAt, hashtags: ['#GPT4','#챗봇']}]
+    let html = '';
+    if(!data.length){
+      html = `<tr><td colspan="5" style="text-align:center;">대화가 없습니다</td></tr>`;
+    }else{
+      data.forEach(row=>{
+        let tagsHtml = (row.hashtags||[]).map(t=>`<span>#${t.replace('#','')}</span>`).join('');
+        html += `<tr>
+          <td>${row.userId}</td>
+          <td>${row.userMsg}</td>
+          <td>${row.aiReply}</td>
+          <td>${row.createdAt ? row.createdAt.replace('T',' ').substring(0,16) : ''}</td>
+          <td class="hashtag-list">${tagsHtml}</td>
+        </tr>`;
+      });
+    }
+    $('#chatListBody').html(html);
+    $('#chatListTitle').text(tag==='전체' ? '전체 대화 목록' : `"${tag}" 대화 목록`);
+  });
+}
+</script>
+<script>
+document.getElementById('logout-btn').onclick = function() {
+    fetch('/logout', { method: 'POST', credentials: 'include' })
+      .finally(() => window.location.href = '/login.html');
+};
+</script>
+</body>
+</html>

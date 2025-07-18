@@ -23,12 +23,47 @@
     .delete-btn { background:#111; color:#fff; border:none; padding:5px 12px; margin-bottom:7px;}
     .tag-btn { margin-left:8px; background:#eee; border:none; padding:4px 8px; border-radius:4px; cursor:pointer;}
     .radio-btn {margin-right: 8px;}
-    /* 해시태그 모달 스타일 */
     #hashtagModal { display:none; position:fixed; left:0; top:0; width:100vw; height:100vh; background:rgba(0,0,0,0.15); z-index:10; }
     #hashtagModal > div { background:#fff; width:350px; margin:120px auto; padding:28px 22px; border-radius:14px; box-shadow:0 6px 24px rgba(0,0,0,0.2); position:relative; }
   </style>
 </head>
 <body>
+<header>
+    <nav>
+        <button id="logout-btn" style="background:none;border:none;color:#fff;font-weight:bold;cursor:pointer;">로그아웃</button>
+        <a href="/history.html">대화목록</a>
+        <a href="/loginHistory.html">로그인기록</a>
+        <a href="/chat.html">채팅하러 가기</a>
+        <a href="/hashtag.html">해시태그 순위</a>
+    </nav>
+</header>
+<style>
+header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    background: #333;
+    color: #fff;
+    padding: 15px 0;
+    z-index: 1000;
+}
+header nav {
+    display: flex;
+    justify-content: center;
+    gap: 30px;
+}
+header nav a {
+    color: #fff;
+    text-decoration: none;
+    font-weight: bold;
+    transition: color 0.2s;
+}
+header nav a:hover {
+    color: #ffd700;
+}
+body { margin-top: 80px !important; }
+</style>
   <div style="width:100%;text-align:right;padding:10px 0 0 0;">
     <button onclick="location.href='loginHistory.html'" style="background:#ffe400;border:none;padding:8px 18px;border-radius:8px;font-weight:bold;cursor:pointer;">로그인 기록 보기</button>
   </div>
@@ -81,8 +116,11 @@
     let fullList = [];
     let mode = 'all';
 
+    // --- 중복 태그 방지용 추가 변수
+    let currentChatNo = null;
+    let alreadyTags = [];
+
     $(function() {
-      // 로그인한 id 표시
       $.ajax({
         url: '/whoami',
         method: 'GET',
@@ -99,7 +137,6 @@
         }
       });
 
-      // 내 대화목록 불러오기
       $.ajax({
         url: "/chat/history/by-id",
         method: "GET",
@@ -124,6 +161,11 @@
       }
     });
 
+    document.getElementById('logout-btn').onclick = function() {
+        fetch('/logout', { method: 'POST', credentials: 'include' })
+          .finally(() => window.location.href = '/login.html');
+    };
+
     function getFilteredList() {
       return mode === 'fav' ? fullList.filter(x => x.bookmark == 1) : fullList;
     }
@@ -147,14 +189,14 @@
                 +`${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
         }
         tr.innerHTML = `
-          <td><input type="checkbox" class="rowChk" data-no="${item.no}"></td>
+          <td><input type="checkbox" class="rowChk" data-no="${item.chatNo}"></td>
           <td>${time}</td>
           <td>${item.sessionId ?? ''}</td>
           <td>${item.userMsg ?? ''}</td>
           <td>${item.aiReply ?? ''}</td>
           <td>
             <label class="switch">
-              <input type="checkbox" ${item.bookmark == 1 ? 'checked':''} onchange="toggleBookmark(${item.no})">
+              <input type="checkbox" ${item.bookmark == 1 ? 'checked':''} onchange="toggleBookmark(${item.chatNo})">
               <span class="slider"></span>
             </label>
           </td>
@@ -196,7 +238,7 @@
       })
       .then(result => {
         if(result === 1) {
-          fullList = fullList.filter(x => !sel.includes(x.no));
+          fullList = fullList.filter(x => !sel.includes(x.chatNo));
           const filtered = getFilteredList();
           const maxPage = Math.max(1, Math.ceil(filtered.length / pageSize));
           currentPage = Math.min(currentPage, maxPage);
@@ -210,15 +252,15 @@
         alert('네트워크 오류');
       });
     }
-    function toggleBookmark(no) {
-      const idx = fullList.findIndex(x => x.no == no);
+    function toggleBookmark(chatNo) {
+      const idx = fullList.findIndex(x => x.chatNo == chatNo);
       if (idx === -1) return;
       const item = fullList[idx];
       const newBookmark = item.bookmark == 1 ? 0 : 1;
       fetch('/chat/bookmark', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ no: item.no, bookmark: newBookmark })
+        body: JSON.stringify({ no: item.chatNo, bookmark: newBookmark })
       })
       .then(res => {
         if (!res.ok) throw new Error('서버 오류');
@@ -245,8 +287,9 @@
       renderPaging(filtered.length, currentPage);
     }
 
-    // 해시태그 추가 기능
-    let currentChatNo = null;
+    // ==========================
+    // 해시태그 추가 기능 (중복 체크 포함)
+    // ==========================
     $(document).on('click', '.tag-btn', function() {
       const tr = $(this).closest('tr');
       currentChatNo = tr.find('.rowChk').data('no');
@@ -254,6 +297,7 @@
       fetch(`/chat/${currentChatNo}/hashtags`)
         .then(res => res.json())
         .then(list => {
+          alreadyTags = list; // 기존 태그 배열 저장
           $('#currentTags').text(list.length ? `기존: ${list.join(', ')}` : '기존 해시태그 없음');
           $('#tagInput').val('');
           $('#hashtagModal').show();
@@ -265,6 +309,7 @@
       $('#tagInput').val('');
       $('#currentTags').text('');
       currentChatNo = null;
+      alreadyTags = []; // 기존 태그 초기화
     });
 
     $('#tagSaveBtn').on('click', function() {
@@ -275,6 +320,15 @@
         .filter(t => t.length>0);
       tags = [...new Set(tags)];
       if(!tags.length) return alert('해시태그를 입력하세요');
+
+      // === 중복체크 ===
+      let duplicated = tags.filter(t => alreadyTags.includes(t));
+      if(duplicated.length) {
+        alert(`이미 등록된 태그입니다: ${duplicated.join(', ')}`);
+        return;
+      }
+      // ==============
+
       fetch(`/chat/${currentChatNo}/hashtags`, {
         method: 'POST',
         headers: {'Content-Type':'application/json'},
@@ -291,6 +345,7 @@
           alert(result.message || '저장 실패');
         }
         currentChatNo = null;
+        alreadyTags = [];
       })
       .catch(()=>alert('네트워크 오류'));
     });

@@ -6,7 +6,7 @@ import lombok.Data;
 
 @Data
 public class ChatHistoryDto {
-    private int no;
+    private int chatNo;
     private String id;
     private String sessionId;
     private String userMsg;

@@ -6,5 +6,6 @@ import lombok.Data;
 public class ChatHashtagDto {
     private int tagId;
     private int chatNo;
-    private String tag;
+    private String tagText;
+    private java.sql.Timestamp createAt;
 }

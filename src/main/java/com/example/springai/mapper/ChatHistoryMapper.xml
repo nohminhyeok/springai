@@ -23,7 +23,7 @@
 	<select id="findBySessionId" parameterType="string"
 		resultType="com.example.springai.dto.ChatHistoryDto">
 		SELECT
-		no,
+		chat_no AS chatNo,
 		id,
 		session_id AS sessionId,
 		user_Msg AS userMsg,
@@ -39,7 +39,7 @@
 	</select>
 
 	<select id="findById" parameterType="string" resultType="com.example.springai.dto.ChatHistoryDto">
-    SELECT no, id, session_id AS sessionId, user_Msg AS userMsg, ai_reply AS aiReply, create_at AS createAt, bookmark
+    SELECT chat_no AS chatNo, id, session_id AS sessionId, user_Msg AS userMsg, ai_reply AS aiReply, create_at AS createAt, bookmark
     FROM chat_history
     WHERE id = #{id}
     ORDER BY create_at ASC
@@ -48,12 +48,12 @@
 	<update id="updateBookmark" parameterType="map">
 		UPDATE chat_history
 		SET bookmark = #{bookmark}
-		WHERE no = #{no}
+		WHERE chat_no = #{no}
 	</update>
 
 	<delete id="deleteChats">
 		DELETE FROM chat_history
-		WHERE no IN
+		WHERE chat_no IN
 		<foreach item="no" collection="nos" open="(" separator=","
 			close=")">
 			#{no}

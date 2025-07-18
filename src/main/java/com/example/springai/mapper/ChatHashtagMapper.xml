@@ -1,18 +1,56 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.example.springai.mapper.ChatHashtagMapper">
-    <select id="findByChatNo" parameterType="int" resultType="com.example.springai.dto.ChatHashtagDto">
-        SELECT * FROM chat_hashtag WHERE chat_no = #{chatNo} ORDER BY tag_id
-    </select>
-    <insert id="insertHashtag" parameterType="com.example.springai.dto.ChatHashtagDto">
-        INSERT INTO chat_hashtag (chat_no, tag) VALUES (#{chatNo}, #{tag})
-    </insert>
-    <delete id="deleteAllByChatNo" parameterType="int">
-        DELETE FROM chat_hashtag WHERE chat_no = #{chatNo}
-    </delete>
-    
-    <select id="existsByChatNoAndTag" parameterType="com.example.springai.dto.ChatHashtagDto" resultType="int">
-    SELECT COUNT(*) FROM chat_hashtag WHERE chat_no = #{chatNo} AND tag = #{tag}
-</select>
-    
+	<select id="findByChatNo" parameterType="int"
+		resultType="com.example.springai.dto.ChatHashtagDto">
+		SELECT * FROM chat_hashtag WHERE chat_no = #{chatNo} ORDER
+		BY create_at
+	</select>
+	<insert id="insertHashtag"
+		parameterType="com.example.springai.dto.ChatHashtagDto">
+		INSERT INTO chat_hashtag (chat_no, tag_text) VALUES
+		(#{chatNo}, #{tagText})
+	</insert>
+	<delete id="deleteAllByChatNo" parameterType="int">
+		DELETE FROM
+		chat_hashtag WHERE chat_no = #{chatNo}
+	</delete>
+
+	<select id="existsByChatNoAndTag"
+		parameterType="com.example.springai.dto.ChatHashtagDto"
+		resultType="int">
+		SELECT COUNT(*) FROM chat_hashtag WHERE chat_no = #{chatNo}
+		AND tag_text = #{tagText}
+	</select>
+	<select id="selectPopularTags" resultType="map">
+		SELECT tag_text as tag, COUNT(*) as count
+		FROM chat_hashtag
+		GROUP BY tag_text
+		ORDER BY count DESC
+		LIMIT 10
+	</select>
+	<!-- 전체 태그 -->
+	<select id="selectAllTags" resultType="map">
+		SELECT DISTINCT tag_text as tag FROM chat_hashtag ORDER BY tag
+	</select>
+	<!-- 해시태그별 채팅 목록 -->
+	<select id="selectChatsByTag" parameterType="string" resultType="map">
+SELECT h.chat_no, h.id as userId, h.user_Msg as userMsg, h.ai_reply as aiReply, h.create_at as createdAt,
+  GROUP_CONCAT(ch.tag_text) as hashtags
+FROM chat_history h
+JOIN chat_hashtag ch ON h.chat_no = ch.chat_no
+WHERE ch.tag_text = #{tagText}
+GROUP BY h.chat_no, h.id, h.user_Msg, h.ai_reply, h.create_at
+ORDER BY h.create_at DESC
+	</select>
+
+	<!-- 전체 채팅 목록 (해시태그 포함) -->
+	<select id="selectAllChatsWithTags" resultType="map">
+	SELECT h.chat_no, h.id as userId, h.user_Msg as userMsg, h.ai_reply as aiReply, h.create_at as createdAt,
+	  GROUP_CONCAT(ch.tag_text) as hashtags
+	FROM chat_history h
+	LEFT JOIN chat_hashtag ch ON h.chat_no = ch.chat_no
+	GROUP BY h.chat_no, h.id, h.user_Msg, h.ai_reply, h.create_at
+	ORDER BY h.create_at DESC
+	</select>
 </mapper>

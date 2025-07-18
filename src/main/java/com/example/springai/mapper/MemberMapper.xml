@@ -4,7 +4,7 @@
 <mapper namespace="com.example.springai.mapper.MemberMapper">
 
 <select id="login" resultType="com.example.springai.dto.MemberDto">
-    SELECT id, email, pw FROM member WHERE id = #{id} AND pw = #{pw}
+    SELECT id, email, pw, role FROM member WHERE id = #{id} AND pw = #{pw}
 </select>
 
     <select id="isIdDuplicate" parameterType="string" resultType="int">
@@ -12,18 +12,19 @@
     </select>
 
     <insert id="insertMember" parameterType="com.example.springai.dto.MemberDto">
-        INSERT INTO member (id, email, pw) VALUES (#{id}, #{email}, #{pw})
+        INSERT INTO member (id, email, pw, role) VALUES (#{id}, #{email}, #{pw}, #{role})
     </insert>
 
     <select id="getMemberinfo" parameterType="string" resultType="com.example.springai.dto.MemberDto">
-        SELECT id, email FROM member WHERE id = #{id}
+        SELECT id, email, role FROM member WHERE id = #{id}
     </select>
 
 	<update id="updateMember" parameterType="com.example.springai.dto.MemberDto">
 	    UPDATE member
 	    SET
 	        email = #{email},
-	        pw = CASE WHEN #{pw} IS NULL OR #{pw} = '' THEN pw ELSE #{pw} END
+	        pw = CASE WHEN #{pw} IS NULL OR #{pw} = '' THEN pw ELSE #{pw} END,
+	        role = #{role}
 	    WHERE id = #{id}
 	</update>
 </mapper> 
