@@ -5,139 +5,77 @@
   <title>카카오톡 스타일 챗봇</title>
   <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
   <style>
-    body {
-      margin: 0;
-      padding: 0;
-      background-color: #ececec;
-      font-family: 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif;
-    }
-
-    .chat-container {
-      max-width: 420px;
-      height: 700px;
-      margin: 30px auto;
-      background-color: #fff;
-      display: flex;
-      flex-direction: column;
-      border-radius: 12px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.2);
-      overflow: hidden;
-    }
-
-    .chat-header {
-      background-color: #ffe400;
-      padding: 14px;
-      text-align: center;
-      font-weight: bold;
-      font-size: 18px;
-      border-bottom: 1px solid #ccc;
-    }
-
-    .chat-messages {
-      flex: 1;
-      padding: 15px;
-      overflow-y: auto;
-    }
-
-    .message {
-      display: flex;
-      margin-bottom: 10px;
-      align-items: flex-end;
-    }
-
-    .message.bot {
-      justify-content: flex-start;
-    }
-
-    .message.user {
-      justify-content: flex-end;
-    }
-
-    .bubble {
-      max-width: 70%;
-      padding: 10px 14px;
-      border-radius: 18px;
-      font-size: 14px;
-      line-height: 1.5;
-    }
-
-    .bot .bubble {
-      background-color: #f1f1f1;
-      color: #333;
-      border-bottom-left-radius: 2px;
-    }
-
-    .user .bubble {
-      background-color: #ffe400;
-      color: #000;
-      border-bottom-right-radius: 2px;
-    }
-
-    .chat-input {
-      display: flex;
-      border-top: 1px solid #ccc;
-      padding: 10px;
-      background-color: #fff;
-    }
-
-    #user-input {
-      flex: 1;
-      padding: 10px;
-      border: 1px solid #ccc;
-      border-radius: 20px;
-      font-size: 14px;
-      outline: none;
-    }
-
-    #send-btn {
-      margin-left: 8px;
-      background-color: #ffe400;
-      border: none;
-      padding: 0 16px;
-      border-radius: 20px;
-      cursor: pointer;
-      font-weight: bold;
-    }
-
-    .profile-icon {
-      width: 32px;
-      height: 32px;
-      background-color: #ddd;
-      border-radius: 50%;
-      margin-right: 8px;
-    }
+    /* --- 스타일은 원본 그대로 생략 --- */
+    body { margin:0; padding:0; background-color:#ececec; font-family:'Apple SD Gothic Neo','Noto Sans KR',sans-serif; }
+    .chat-container { max-width:420px; height:700px; margin:30px auto; background-color:#fff; display:flex; flex-direction:column; border-radius:12px; box-shadow:0 0 10px rgba(0,0,0,0.2); overflow:hidden; }
+    .chat-header { background-color:#ffe400; padding:14px; text-align:center; font-weight:bold; font-size:18px; border-bottom:1px solid #ccc; position:relative; }
+    .history-btn { position:absolute; right:16px; top:50%; transform:translateY(-50%); background:#fffbe6; border:1px solid #ffe400; border-radius:8px; padding:4px 12px; font-size:13px; cursor:pointer; color:#333; font-weight:500; transition:background 0.2s; }
+    .history-btn:hover { background:#ffe400; }
+    .action-btns { position:absolute; left:16px; top:50%; transform:translateY(-50%); display:flex; gap:8px; }
+    .action-btn { background:#fffbe6; border:1px solid #ffe400; border-radius:8px; padding:4px 10px; font-size:13px; cursor:pointer; color:#333; font-weight:500; transition:background 0.2s; }
+    .action-btn:hover { background:#ffe400; }
+    .chat-messages { flex:1; padding:15px; overflow-y:auto; }
+    .message { display:flex; margin-bottom:10px; align-items:flex-end; }
+    .message.bot { justify-content:flex-start; }
+    .message.user { justify-content:flex-end; }
+    .bubble { max-width:70%; padding:10px 14px; border-radius:18px; font-size:14px; line-height:1.5; }
+    .bot .bubble { background-color:#f1f1f1; color:#333; border-bottom-left-radius:2px; }
+    .user .bubble { background-color:#ffe400; color:#000; border-bottom-right-radius:2px; }
+    .chat-input { display:flex; border-top:1px solid #ccc; padding:10px; background-color:#fff; }
+    #user-input { flex:1; padding:10px; border:1px solid #ccc; border-radius:20px; font-size:14px; outline:none; }
+    #send-btn { margin-left:8px; background-color:#ffe400; border:none; padding:0 16px; border-radius:20px; cursor:pointer; font-weight:bold; }
+    .profile-icon { width:32px; height:32px; background-color:#ddd; border-radius:50%; margin-right:8px; }
+    .save-success { color:#27ae60; text-align:center; margin:10px 0 0 0; font-size:14px; display:none; }
+    .save-error { color:#e74c3c; text-align:center; margin:10px 0 0 0; font-size:14px; display:none; }
   </style>
 </head>
 <body>
   <div class="chat-container">
-    <div class="chat-header">챗봇</div>
+    <div class="chat-header">
+      <div class="action-btns">
+        <button class="action-btn" id="clear-btn">대화 지우기</button>
+        <button class="action-btn" id="save-btn">대화 저장</button>
+      </div>
+      챗봇
+      <button class="history-btn" onclick="location.href='history.html'">채팅 기록 보기</button>
+    </div>
     <div class="chat-messages" id="chat-messages"></div>
+    <div class="save-success" id="save-success">대화가 저장되었습니다!</div>
+    <div class="save-error" id="save-error">저장 실패! 다시 시도해 주세요.</div>
     <form class="chat-input" id="chat-form">
       <input type="text" id="user-input" placeholder="메시지를 입력하세요..." autocomplete="off" />
       <button type="submit" id="send-btn">전송</button>
     </form>
   </div>
-
   <script>
+    let chatHistory = [];
+    let saveClickCount = 0; // 저장버튼 클릭 카운트(디버깅)
+
     $(function () {
       $("#chat-form").submit(function (e) {
         e.preventDefault();
         const message = $("#user-input").val().trim();
         if (!message) return;
-
-        // 사용자 메시지 표시
         appendMessage('user', message);
+        chatHistory.push({ userMsg: message, aiReply: null });
+
+        // 1. 입력시마다 chatHistory 콘솔 출력
+        console.log("메시지 입력됨. chatHistory:", JSON.parse(JSON.stringify(chatHistory)));
+
         $("#user-input").val("");
         scrollToBottom();
-
-        // AJAX 통신 (서버에 메시지 전송)
         $.ajax({
-          url: "/chat", // 실제 서버 주소
+          url: "/chat",
           method: "POST",
           contentType: "application/json",
-          data: JSON.stringify({ "userMsg":message }),
-          success: function (res) { // API명세서에 문자열하나만 응답받는 형태이다
+          data: JSON.stringify({ "userMsg": message }),
+          success: function (res) {
             appendMessage('bot', res || "응답이 없습니다.");
+            if (chatHistory.length > 0) {
+              chatHistory[chatHistory.length - 1].aiReply = res;
+            }
+            // 2. 챗봇 응답 후 chatHistory 콘솔 출력
+            console.log("AI 응답 처리됨. chatHistory:", JSON.parse(JSON.stringify(chatHistory)));
             scrollToBottom();
           },
           error: function () {
@@ -147,6 +85,39 @@
         });
       });
 
+      $("#clear-btn").click(function () {
+        $("#chat-messages").empty();
+        chatHistory = [];
+        $("#save-success, #save-error").hide();
+        // 3. 대화 지우기 후 chatHistory 콘솔 출력
+        console.log("대화 지우기 클릭. chatHistory:", JSON.parse(JSON.stringify(chatHistory)));
+      });
+
+      $("#save-btn").on("click", function (e) {
+    	  e.preventDefault();
+    	  saveClickCount++;
+    	  if (chatHistory.length === 0) {
+    	    showSaveError("저장할 대화가 없습니다.");
+    	    return;
+    	  }
+    	  $.ajax({
+    	    url: "/chat/save",
+    	    method: "POST",
+    	    contentType: "application/json",
+    	    data: JSON.stringify(chatHistory),
+    	    success: function () {
+    	      showSaveSuccess();
+    	      // [수정] 저장 후 배열 비우기(중복 저장 방지)
+    	      chatHistory = [];
+    	      // 필요시 화면도 비울 수 있음: $("#chat-messages").empty();
+    	      console.log("저장 후 chatHistory 비움:", chatHistory);
+    	    },
+    	    error: function () {
+    	      showSaveError();
+    	    }
+    	  });
+    	});
+
       function appendMessage(type, text) {
         const bubble = `
           <div class="message ${type}">
@@ -155,18 +126,24 @@
           </div>`;
         $("#chat-messages").append(bubble);
       }
-
       function scrollToBottom() {
         const chatBox = $("#chat-messages");
         chatBox.scrollTop(chatBox[0].scrollHeight);
       }
-
       function escapeHtml(text) {
         return text.replace(/[&<>"']/g, function (m) {
           return ({
             '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;'
           })[m];
         });
+      }
+      function showSaveSuccess() {
+        $("#save-success").show();
+        $("#save-error").hide();
+      }
+      function showSaveError(msg) {
+        $("#save-error").text(msg || "저장 실패! 다시 시도해 주세요.").show();
+        $("#save-success").hide();
       }
     });
   </script>

@@ -98,9 +98,17 @@ public class AiChatService {
 	    return aiReply;
 	}
 
-	public int insertChat(ChatHistoryDto chatHistoryDto) {
-		return chatHistoryMapper.insertChat(chatHistoryDto);
-	}
+    public int insertChat(ChatHistoryDto dto) {
+        return chatHistoryMapper.insertChat(dto);
+    }
+
+    public List<ChatHistoryDto> getChatHistory(String sessionId) {
+        return chatHistoryMapper.findBySessionId(sessionId);
+    }
+
+    public List<ChatHistoryDto> getChatHistoryById(String id) {
+        return chatHistoryMapper.findById(id);
+    }
 
     public int updateBookmark(int no, int bookmark) {
         Map<String, Object> param = new HashMap<>();

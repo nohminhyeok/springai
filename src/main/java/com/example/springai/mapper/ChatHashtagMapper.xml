@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.springai.mapper.ChatHashtagMapper">
+    <select id="findByChatNo" parameterType="int" resultType="com.example.springai.dto.ChatHashtagDto">
+        SELECT * FROM chat_hashtag WHERE chat_no = #{chatNo} ORDER BY tag_id
+    </select>
+    <insert id="insertHashtag" parameterType="com.example.springai.dto.ChatHashtagDto">
+        INSERT INTO chat_hashtag (chat_no, tag) VALUES (#{chatNo}, #{tag})
+    </insert>
+    <delete id="deleteAllByChatNo" parameterType="int">
+        DELETE FROM chat_hashtag WHERE chat_no = #{chatNo}
+    </delete>
+    
+    <select id="existsByChatNoAndTag" parameterType="com.example.springai.dto.ChatHashtagDto" resultType="int">
+    SELECT COUNT(*) FROM chat_hashtag WHERE chat_no = #{chatNo} AND tag = #{tag}
+</select>
+    
+</mapper>

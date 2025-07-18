@@ -12,4 +12,6 @@ public interface ChatHistoryMapper {
     List<ChatHistoryDto> findBySessionId(String sessionId);
     int updateBookmark(Map<String, Object> param); // bookmark 수정
     int deleteChats(List<Integer> nos);
+	int insertChat(ChatHistoryDto dto);
+	List<ChatHistoryDto> findById(String id);
 }

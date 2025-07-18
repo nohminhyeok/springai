@@ -7,8 +7,21 @@ import com.example.springai.mapper.MemberMapper;
 @Service
 public class MemberService {
     private final MemberMapper memberMapper;
+    
     public MemberService(MemberMapper memberMapper) {
         this.memberMapper = memberMapper;
+    }
+
+    public MemberDto login(String id, String pw) {
+        return memberMapper.login(id, pw);
+    }
+
+    public boolean isIdDuplicate(String id) {
+        return memberMapper.isIdDuplicate(id) > 0;
+    }
+
+    public int join(MemberDto dto) {
+        return memberMapper.insertMember(dto);
     }
 
     public MemberDto getMemberinfo(String id) {

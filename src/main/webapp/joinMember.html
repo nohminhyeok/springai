@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>회원가입 - SpringAI</title>
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background-color: #ececec;
+      font-family: 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
+
+    .join-container {
+      width: 450px;
+      background-color: #fff;
+      border-radius: 12px;
+      box-shadow: 0 0 20px rgba(0,0,0,0.1);
+      overflow: hidden;
+    }
+
+    .join-header {
+      background-color: #ffe400;
+      padding: 30px;
+      text-align: center;
+    }
+
+    .join-header h1 {
+      margin: 0;
+      font-size: 24px;
+      color: #000;
+      font-weight: bold;
+    }
+
+    .join-form {
+      padding: 40px;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 500;
+      color: #333;
+    }
+
+    .form-group input {
+      width: 100%;
+      padding: 12px;
+      border: 2px solid #e0e0e0;
+      border-radius: 8px;
+      font-size: 16px;
+      box-sizing: border-box;
+      transition: border-color 0.3s;
+    }
+
+    .form-group input:focus {
+      outline: none;
+      border-color: #ffe400;
+    }
+
+    .form-group input.error {
+      border-color: #e74c3c;
+    }
+
+    .form-group input.success {
+      border-color: #27ae60;
+    }
+
+    .join-btn {
+      width: 100%;
+      background-color: #ffe400;
+      color: #000;
+      border: none;
+      padding: 15px;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+
+    .join-btn:hover {
+      background-color: #f4d800;
+    }
+
+    .join-btn:disabled {
+      background-color: #ccc;
+      cursor: not-allowed;
+    }
+
+    .links {
+      text-align: center;
+      margin-top: 20px;
+    }
+
+    .links a {
+      color: #666;
+      text-decoration: none;
+      font-size: 14px;
+    }
+
+    .links a:hover {
+      color: #ffe400;
+    }
+
+    .error-message {
+      color: #e74c3c;
+      font-size: 14px;
+      margin-top: 5px;
+      display: none;
+    }
+
+    .success-message {
+      color: #27ae60;
+      font-size: 14px;
+      margin-top: 5px;
+      display: none;
+    }
+
+    .password-strength {
+      margin-top: 5px;
+      font-size: 12px;
+    }
+
+    .strength-weak { color: #e74c3c; }
+    .strength-medium { color: #f39c12; }
+    .strength-strong { color: #27ae60; }
+  </style>
+</head>
+<body>
+  <div class="join-container">
+    <div class="join-header">
+      <h1>SpringAI 회원가입</h1>
+    </div>
+    <div class="join-form">
+      <form id="join-form">
+        <div class="form-group">
+          <label for="id">아이디 *</label>
+          <input type="text" id="id" name="id" required>
+          <div class="error-message" id="id-error"></div>
+        </div>
+        <div class="form-group">
+          <label for="email">이메일 *</label>
+          <input type="email" id="email" name="email" required>
+          <div class="error-message" id="email-error"></div>
+        </div>
+        <div class="form-group">
+          <label for="pw">비밀번호 *</label>
+          <input type="password" id="pw" name="pw" required>
+          <div class="password-strength" id="password-strength"></div>
+          <div class="error-message" id="pw-error"></div>
+        </div>
+        <div class="form-group">
+          <label for="pw-confirm">비밀번호 확인 *</label>
+          <input type="password" id="pw-confirm" name="pw-confirm" required>
+          <div class="error-message" id="pw-confirm-error"></div>
+        </div>
+        <button type="submit" class="join-btn" id="join-btn">회원가입</button>
+        <div class="success-message" id="success-message"></div>
+      </form>
+      <div class="links">
+        <a href="login.html">이미 계정이 있으신가요? 로그인하기</a>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    $(function() {
+      // 비밀번호 강도 체크
+      $("#pw").on("input", function() {
+        const password = $(this).val();
+        const strength = checkPasswordStrength(password);
+        const strengthText = getStrengthText(strength);
+        const strengthClass = getStrengthClass(strength);
+        
+        $("#password-strength").text(strengthText).removeClass().addClass("password-strength " + strengthClass);
+      });
+
+      // 비밀번호 확인 체크
+      $("#pw-confirm").on("input", function() {
+        const pw = $("#pw").val();
+        const pwConfirm = $(this).val();
+        
+        if (pwConfirm && pw !== pwConfirm) {
+          $(this).removeClass("success").addClass("error");
+          $("#pw-confirm-error").text("비밀번호가 일치하지 않습니다.").show();
+        } else if (pwConfirm) {
+          $(this).removeClass("error").addClass("success");
+          $("#pw-confirm-error").hide();
+        }
+      });
+
+      $("#join-form").submit(function(e) {
+        e.preventDefault();
+        
+        const id = $("#id").val().trim();
+        const email = $("#email").val().trim();
+        const pw = $("#pw").val().trim();
+        const pwConfirm = $("#pw-confirm").val().trim();
+        
+        // 입력값 검증
+        let isValid = true;
+        
+        if (!id) {
+          showError("id-error", "아이디를 입력해주세요.");
+          isValid = false;
+        } else if (id.length < 4) {
+          showError("id-error", "아이디는 4자 이상이어야 합니다.");
+          isValid = false;
+        }
+        
+        if (!email) {
+          showError("email-error", "이메일을 입력해주세요.");
+          isValid = false;
+        } else if (!isValidEmail(email)) {
+          showError("email-error", "올바른 이메일 형식을 입력해주세요.");
+          isValid = false;
+        }
+        
+        if (!pw) {
+          showError("pw-error", "비밀번호를 입력해주세요.");
+          isValid = false;
+        } else if (pw.length < 6) {
+          showError("pw-error", "비밀번호는 6자 이상이어야 합니다.");
+          isValid = false;
+        }
+        
+        if (!pwConfirm) {
+          showError("pw-confirm-error", "비밀번호 확인을 입력해주세요.");
+          isValid = false;
+        } else if (pw !== pwConfirm) {
+          showError("pw-confirm-error", "비밀번호가 일치하지 않습니다.");
+          isValid = false;
+        }
+        
+        if (!isValid) return;
+        
+        // 에러 메시지 숨기기
+        hideAllErrors();
+        
+        // 회원가입 버튼 비활성화
+        $("#join-btn").prop("disabled", true).text("가입 중...");
+        
+        // AJAX 회원가입 요청
+        $.ajax({
+          url: "/join",
+          method: "POST",
+          contentType: "application/json",
+          data: JSON.stringify({
+            id: id,
+            email: email,
+            pw: pw
+          }),
+          success: function(response) {
+            if (response.success) {
+              showSuccess("회원가입 성공! 로그인 페이지로 이동합니다.");
+              setTimeout(function() {
+                window.location.href = "login.html";
+              }, 2000);
+            } else {
+              showError("id-error", response.message || "회원가입에 실패했습니다.");
+              $("#join-btn").prop("disabled", false).text("회원가입");
+            }
+          },
+          error: function(xhr) {
+            let errorMsg = "회원가입에 실패했습니다.";
+            if (xhr.responseJSON && xhr.responseJSON.message) {
+              errorMsg = xhr.responseJSON.message;
+            }
+            showError("id-error", errorMsg);
+            $("#join-btn").prop("disabled", false).text("회원가입");
+          }
+        });
+      });
+      
+      function checkPasswordStrength(password) {
+        let strength = 0;
+        
+        if (password.length >= 6) strength++;
+        if (password.length >= 8) strength++;
+        if (/[a-z]/.test(password)) strength++;
+        if (/[A-Z]/.test(password)) strength++;
+        if (/[0-9]/.test(password)) strength++;
+        if (/[^A-Za-z0-9]/.test(password)) strength++;
+        
+        if (strength <= 2) return "weak";
+        if (strength <= 4) return "medium";
+        return "strong";
+      }
+      
+      function getStrengthText(strength) {
+        switch(strength) {
+          case "weak": return "약함";
+          case "medium": return "보통";
+          case "strong": return "강함";
+          default: return "";
+        }
+      }
+      
+      function getStrengthClass(strength) {
+        return "strength-" + strength;
+      }
+      
+      function isValidEmail(email) {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return emailRegex.test(email);
+      }
+      
+      function showError(elementId, message) {
+        $("#" + elementId).text(message).show();
+      }
+      
+      function hideAllErrors() {
+        $(".error-message").hide();
+      }
+      
+      function showSuccess(message) {
+        $("#success-message").text(message).show();
+      }
+      
+      // 입력 필드 변경 시 에러 메시지 숨기기
+      $("#id, #email, #pw, #pw-confirm").on("input", function() {
+        hideAllErrors();
+        $("#success-message").hide();
+      });
+    });
+  </script>
+</body>
+</html> 

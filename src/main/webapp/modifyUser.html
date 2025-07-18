@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <title>사용자 정보 수정</title>
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
   <style>
     body { font-family: Arial,sans-serif; margin: 20px; }
     h1 { margin-bottom: 16px; }
@@ -16,6 +17,7 @@
   <form id="modifyForm">
     <label>아이디: <input type="text" id="id" name="id" readonly></label>
     <label>이메일: <input type="email" id="email" name="email"></label>
+    <label>새 비밀번호: <input type="password" id="pw" name="pw" autocomplete="new-password"></label>
     <button type="submit">수정</button>
   </form>
   <script>
@@ -28,22 +30,27 @@
         });
     });
     document.getElementById('modifyForm').addEventListener('submit', function(e){
-      e.preventDefault();
-      const data = {
-        id: document.getElementById('id').value,
-        email: document.getElementById('email').value,
-      };
-      fetch('/user/modify', {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify(data)
-      })
-      .then(res => res.json())
-      .then(result => {
-        if(result === 1) alert('수정 완료');
-        else alert('수정 실패');
-      });
-    });
+    	  e.preventDefault();
+    	  const data = {
+    	    id: document.getElementById('id').value,
+    	    email: document.getElementById('email').value,
+    	    pw: document.getElementById('pw').value
+    	  };
+    	  fetch('/user/modify', {
+    	    method: 'POST',
+    	    headers: {'Content-Type': 'application/json'},
+    	    body: JSON.stringify(data)
+    	  })
+    	  .then(res => res.json())
+    	  .then(result => {
+    	    if(result === 1) {
+    	      alert('수정 완료');
+    	      location.href = '/login.html';   // ✅ 여기서 로그인 페이지로 이동
+    	    } else {
+    	      alert('수정 실패');
+    	    }
+    	  });
+    	});
   </script>
 </body>
 </html>

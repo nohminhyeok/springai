@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>SpringAI - AI 챗봇 서비스</title>
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background-color: #ececec;
+      font-family: 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
+
+    .main-container {
+      width: 500px;
+      background-color: #fff;
+      border-radius: 12px;
+      box-shadow: 0 0 20px rgba(0,0,0,0.1);
+      overflow: hidden;
+    }
+
+    .main-header {
+      background-color: #ffe400;
+      padding: 40px;
+      text-align: center;
+    }
+
+    .main-header h1 {
+      margin: 0;
+      font-size: 32px;
+      color: #000;
+      font-weight: bold;
+    }
+
+    .main-header p {
+      margin: 10px 0 0 0;
+      font-size: 16px;
+      color: #333;
+    }
+
+    .main-content {
+      padding: 40px;
+      text-align: center;
+    }
+
+    .feature-list {
+      text-align: left;
+      margin: 30px 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .feature-list li {
+      padding: 10px 0;
+      border-bottom: 1px solid #f0f0f0;
+      color: #333;
+    }
+
+    .feature-list li:before {
+      content: "✓";
+      color: #ffe400;
+      font-weight: bold;
+      margin-right: 10px;
+    }
+
+    .button-group {
+      display: flex;
+      gap: 15px;
+      margin-top: 30px;
+    }
+
+    .btn {
+      flex: 1;
+      padding: 15px;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-block;
+      text-align: center;
+      transition: all 0.3s;
+    }
+
+    .btn-primary {
+      background-color: #ffe400;
+      color: #000;
+    }
+
+    .btn-primary:hover {
+      background-color: #f4d800;
+    }
+
+    .btn-secondary {
+      background-color: #f8f9fa;
+      color: #333;
+      border: 2px solid #e0e0e0;
+    }
+
+    .btn-secondary:hover {
+      background-color: #e9ecef;
+    }
+
+    .welcome-message {
+      background-color: #f8f9fa;
+      padding: 20px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+    }
+
+    .welcome-message h3 {
+      margin: 0 0 10px 0;
+      color: #333;
+    }
+
+    .welcome-message p {
+      margin: 0;
+      color: #666;
+    }
+  </style>
+</head>
+<body>
+  <div class="main-container">
+    <div class="main-header">
+      <h1>SpringAI</h1>
+      <p>AI 챗봇과 대화해보세요</p>
+    </div>
+    <div class="main-content">
+      <div id="welcome-section">
+        <div class="welcome-message">
+          <h3>🎉 SpringAI에 오신 것을 환영합니다!</h3>
+          <p>AI 챗봇과 함께 대화하며 새로운 경험을 해보세요.</p>
+        </div>
+        
+        <h3>주요 기능</h3>
+        <ul class="feature-list">
+          <li>실시간 AI 챗봇 대화</li>
+          <li>대화 기록 저장 및 관리</li>
+          <li>즐겨찾기 기능</li>
+          <li>개인화된 사용자 경험</li>
+          <li>안전한 로그인 시스템</li>
+        </ul>
+        
+        <div class="button-group">
+          <a href="login.html" class="btn btn-primary">로그인</a>
+          <a href="joinMember.html" class="btn btn-secondary">회원가입</a>
+        </div>
+      </div>
+      
+      <div id="logged-in-section" style="display: none;">
+        <div class="welcome-message">
+          <h3>안녕하세요, <span id="user-name"></span>님!</h3>
+          <p>챗봇과 대화를 시작해보세요.</p>
+        </div>
+        
+        <div class="button-group">
+          <a href="chat.html" class="btn btn-primary">채팅 시작</a>
+          <button onclick="logout()" class="btn btn-secondary">로그아웃</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    $(function() {
+      // 로그인 상태 확인
+      checkLoginStatus();
+    });
+
+    function checkLoginStatus() {
+      $.ajax({
+        url: "/whoami",
+        method: "GET",
+        success: function(response) {
+          if (response.id) {
+            $("#user-name").text(response.id);
+            $("#welcome-section").hide();
+            $("#logged-in-section").show();
+          } else {
+            $("#welcome-section").show();
+            $("#logged-in-section").hide();
+          }
+        },
+        error: function() {
+          $("#welcome-section").show();
+          $("#logged-in-section").hide();
+        }
+      });
+    }
+
+    function logout() {
+      $.ajax({
+        url: "/logout",
+        method: "POST",
+        success: function(response) {
+          if (response.success) {
+            alert("로그아웃되었습니다.");
+            location.reload();
+          }
+        },
+        error: function() {
+          alert("로그아웃 처리 중 오류가 발생했습니다.");
+        }
+      });
+    }
+  </script>
+</body>
+</html> 

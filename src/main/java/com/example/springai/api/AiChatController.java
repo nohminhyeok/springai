@@ -18,37 +18,39 @@ import jakarta.servlet.http.HttpSession;
 
 @RestController
 public class AiChatController {
-	private final AiChatService aiChatService;
+    private final AiChatService aiChatService;
 
-	public AiChatController(AiChatService aiChatService) {
-		this.aiChatService = aiChatService;
-	}
-	
-    @PostMapping("/chat")
-    public String chat(@RequestBody ChatHistoryDto chatHistoryDto, HttpSession session) { // session 속성 안에 message List를 만들어 이전 대화를 누적
-    	// {"userMsg":"hello"} JSON 문자열 -> 자바 DTO 객체(@RequestBody)
-    	String userMsg = chatHistoryDto.getUserMsg();
-    	String aiReply = aiChatService.generate(userMsg, session);
-    	chatHistoryDto.setSessionId(session.getId());
-    	chatHistoryDto.setAiReply(aiReply);
-    	int row = aiChatService.insertChat(chatHistoryDto);
-
-    	return aiReply;
-    
+    public AiChatController(AiChatService aiChatService) {
+        this.aiChatService = aiChatService;
     }
-    /** (2) 화면에서 누른 “대화 저장하기” 버튼용 API **/
+    
+    @PostMapping("/chat")
+    public String chat(@RequestBody ChatHistoryDto chatHistoryDto, HttpSession session) {
+        String userMsg = chatHistoryDto.getUserMsg();
+        String aiReply = aiChatService.generate(userMsg, session);
+        // [수정] DB 저장 삭제! 프론트에서 저장할 때만 DB에 저장
+        return aiReply;
+    }
+
+    // 대화 저장 버튼용 API
     @PostMapping("/chat/save")
-    public ResponseEntity<Void> saveConversation(@RequestBody List<ChatHistoryDto> history,
-                                                 HttpSession session) {
+    public ResponseEntity<Void> saveConversation(
+        @RequestBody List<ChatHistoryDto> history,
+        HttpSession session
+    ) {
         String sessionId = session.getId();
+        String id = (String) session.getAttribute("id");
         for (ChatHistoryDto dto : history) {
             dto.setSessionId(sessionId);
-            aiChatService.insertChat(dto);
+            if (id != null) {
+                dto.setId(id);
+                dto.setBookmark(dto.getBookmark() == 0 ? 0 : dto.getBookmark()); // [수정] bookmark값 기본값 처리
+                aiChatService.insertChat(dto);
+            }
         }
         return ResponseEntity.ok().build();
     }
 
-    /** (3) 로그인 세션에 담긴 ID를 프런트가 가져갈 수 있는 API **/
     @GetMapping("/whoami")
     public ResponseEntity<Map<String, String>> whoami(HttpSession session) {
         String id = (String) session.getAttribute("id");
@@ -64,7 +66,17 @@ public class AiChatController {
         List<ChatHistoryDto> history = aiChatService.getChatHistory(sessionId);
         return ResponseEntity.ok(history);
     }
-}
+
+    @GetMapping("/chat/history/by-id")
+    public ResponseEntity<List<ChatHistoryDto>> getHistoryById(HttpSession session) {
+        String id = (String) session.getAttribute("id");
+        if (id == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+        List<ChatHistoryDto> history = aiChatService.getChatHistoryById(id);
+        return ResponseEntity.ok(history);
+    }
+    
     @PostMapping("/chat/bookmark")
     public int updateBookmark(@RequestBody Map<String, Object> body) {
         int no = (int) body.get("no");
