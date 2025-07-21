@@ -61,18 +61,6 @@ public class AiChatController {
     }
 
     /**
-     * 현재 로그인한 사용자 ID 반환 (세션 체크용)
-     */
-    @GetMapping("/whoami")
-    public ResponseEntity<Map<String, String>> whoami(HttpSession session) {
-        String id = (String) session.getAttribute("id");
-        if (id == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
-        return ResponseEntity.ok(Collections.singletonMap("id", id));
-    }
-    
-    /**
      * 세션 기준 대화 이력 조회
      */
     @GetMapping("/chat/history")

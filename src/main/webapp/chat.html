@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <title>카카오톡 스타일 챗봇</title>
+  <script src="/static/js/header.js"></script>
   <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
   <style>
     /* --- 스타일은 원본 그대로 생략 --- */
@@ -31,11 +32,12 @@
         position: fixed;
         top: 0;
         left: 0;
-        width: 100%;
+        width: 100vw;
         background: #333;
         color: #fff;
         padding: 15px 0;
-        z-index: 1000;
+        z-index: 9999;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
     }
     header nav {
         display: flex;
@@ -56,13 +58,7 @@
 </head>
 <body>
   <header>
-      <nav>
-          <button id="logout-btn" style="background:none;border:none;color:#fff;font-weight:bold;cursor:pointer;">로그아웃</button>
-          <a href="/history.html">대화목록</a>
-          <a href="/loginHistory.html">로그인기록</a>
-          <a href="/chat.html">채팅하러 가기</a>
-          <a href="/hashtag.html">해시태그 순위</a>
-      </nav>
+    <nav id="main-header"></nav>
   </header>
   <div class="chat-container">
     <div class="chat-header">
@@ -180,11 +176,6 @@
         $("#save-success").hide();
       }
     });
-
-document.getElementById('logout-btn').onclick = function() {
-    fetch('/logout', { method: 'POST', credentials: 'include' })
-      .finally(() => window.location.href = '/login.html');
-};
   </script>
 </body>
 </html>

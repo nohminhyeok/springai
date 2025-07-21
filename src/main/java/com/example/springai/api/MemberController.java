@@ -39,6 +39,7 @@ public class MemberController {
                 session.setAttribute("id", member.getId());
                 session.setAttribute("loginId", member.getId());
                 session.setAttribute("role", member.getRole());
+                System.out.println("[로그인] 세션에 저장된 role: " + member.getRole());
                 // 로그인 기록 저장
                 loginHistoryService.recordLogin(member.getId(), session.getId());
                 response.put("success", true);
@@ -134,5 +135,41 @@ public class MemberController {
             return ResponseEntity.status(401).body(null);
         }
         return ResponseEntity.ok(loginHistoryService.getUserLoginHistory(id));
+    }
+
+    /**
+     * 관리자: 전체 로그인 이력 조회
+     */
+    @GetMapping("/loginHistory/all")
+    public ResponseEntity<?> allLoginHistory(HttpSession session) {
+        String role = (String) session.getAttribute("role");
+        if (!"ADMIN".equals(role)) {
+            return ResponseEntity.status(403).body("권한이 없습니다.");
+        }
+        return ResponseEntity.ok(loginHistoryService.getAllLoginHistory());
+    }
+
+    /**
+     * 관리자: 전체 사용자별 총 접속시간 통계
+     */
+    @GetMapping("/loginHistory/stats")
+    public ResponseEntity<?> loginStats(HttpSession session) {
+        String role = (String) session.getAttribute("role");
+        if (!"ADMIN".equals(role)) {
+            return ResponseEntity.status(403).body("권한이 없습니다.");
+        }
+        return ResponseEntity.ok(loginHistoryService.getTotalLoginStats());
+    }
+
+    /**
+     * 현재 로그인한 사용자 id/role 반환 (header.html용)
+     */
+    @GetMapping("/whoami")
+    public Map<String, Object> whoami(HttpSession session) {
+        Map<String, Object> map = new HashMap<>();
+        map.put("id", session.getAttribute("id"));
+        map.put("role", session.getAttribute("role"));
+        System.out.println("[/whoami] 반환 role: " + session.getAttribute("role"));
+        return map;
     }
 }

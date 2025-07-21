@@ -48,4 +48,12 @@ public class LoginHistoryService {
     public List<LoginHistoryDto> getUserLoginHistory(String id) {
         return mapper.findById(id);
     }
+
+    public List<LoginHistoryDto> getAllLoginHistory() {
+        return mapper.findAll();
+    }
+
+    public List<com.example.springai.dto.UserLoginStat> getTotalLoginStats() {
+        return mapper.getTotalLoginStats();
+    }
 }

@@ -40,4 +40,24 @@
     FROM login_history
     WHERE session_id = #{sessionId}
 </select>
+
+<select id="findAll" resultType="com.example.springai.dto.LoginHistoryDto">
+    SELECT 
+        idkey,
+        id,
+        login_time    AS loginTime,
+        logout_time   AS logoutTime,
+        duration_minutes AS durationMinutes,
+        session_id    AS sessionId,
+        created_at    AS createdAt
+    FROM login_history
+    ORDER BY login_time DESC
+</select>
+
+<select id="getTotalLoginStats" resultType="com.example.springai.dto.UserLoginStat">
+    SELECT id, COALESCE(SUM(duration_minutes),0) AS totalMinutes
+    FROM login_history
+    GROUP BY id
+    ORDER BY totalMinutes DESC
+</select>
 </mapper> 

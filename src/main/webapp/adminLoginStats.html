@@ -2,11 +2,11 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
-  <title>내 로그인 이력</title>
+  <title>총 접속시간 통계 (관리자)</title>
   <script src="/static/js/header.js"></script>
   <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
   <style>
-    body { font-family: Arial, sans-serif; margin:20px; }
+    body { font-family: Arial, sans-serif; margin:20px; margin-top: 80px !important; }
     .header { display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; }
     table { width:100%; border-collapse:collapse; margin-top:20px; }
     th, td { border:1px solid #ddd; padding:12px; text-align:left; }
@@ -38,7 +38,6 @@
     header nav a:hover {
         color: #ffd700;
     }
-    body { margin-top: 80px !important; }
   </style>
 </head>
 <body>
@@ -47,57 +46,53 @@
   </header>
   <div class="header">
     <button type="button" onclick="location.href='/chat.html'">채팅하러 Go</button>
-    <h1 id="title">내 로그인 이력</h1>
+    <h1>총 접속시간 통계 (관리자)</h1>
     <div>
-      <button class="refresh-btn" onclick="loadLoginHistory()">새로고침</button>
+      <button class="refresh-btn" onclick="loadLoginStats()">새로고침</button>
       <button class="logout-btn" onclick="logout()">로그아웃</button>
     </div>
   </div>
 
-  <table id="historyTable">
+  <table id="statsTable">
     <thead>
-      <tr><th>로그인 시간</th><th>로그아웃 시간</th><th>머문 시간</th></tr>
+      <tr><th>사용자ID</th><th>총 접속시간(분)</th></tr>
     </thead>
-    <tbody id="historyBody">
+    <tbody id="statsBody">
       <!-- 동적으로 채워짐 -->
     </tbody>
   </table>
 
   <script>
-    window.onload = loadLoginHistory;
+    window.onload = loadLoginStats;
 
-    function loadLoginHistory(){
-      fetch('/loginHistory', { method:'GET', credentials:'include' })
+    function loadLoginStats(){
+      fetch('/loginHistory/stats', { method:'GET', credentials:'include' })
         .then(res=>{
-          if(res.status===401){
-            alert('로그인이 필요합니다.');
+          if(res.status===401 || res.status===403){
+            alert('관리자 권한이 필요합니다.');
             return location.href='/login.html';
           }
           return res.json();
         })
-        .then(data=> displayHistory(data))
+        .then(data=> displayStats(data))
         .catch(e=>{
           console.error(e);
-          alert('로그인 이력을 불러오는 중 오류가 발생했습니다.');
+          alert('통계 데이터를 불러오는 중 오류가 발생했습니다.');
         });
     }
 
-    function displayHistory(list){
-      const tb = document.getElementById('historyBody');
+    function displayStats(list){
+      const tb = document.getElementById('statsBody');
       tb.innerHTML = '';
       if(!list || !list.length){
-        tb.innerHTML = '<tr><td colspan="3" style="text-align:center;">로그인 이력이 없습니다.</td></tr>';
+        tb.innerHTML = '<tr><td colspan="2" style="text-align:center;">통계 데이터가 없습니다.</td></tr>';
         return;
       }
       list.forEach(item=>{
         const row = document.createElement('tr');
-        const login  = item.loginTime  ? new Date(item.loginTime).toLocaleString('ko-KR') : '-';
-        const logout = item.logoutTime ? new Date(item.logoutTime).toLocaleString('ko-KR') : '-';
-        const dur    = item.durationMinutes!=null ? item.durationMinutes+' 분' : '-';
-        row.innerHTML = `<td>${login}</td><td>${logout}</td><td>${dur}</td>`;
+        row.innerHTML = `<td>${item.id}</td><td>${item.totalMinutes} 분</td>`;
         tb.appendChild(row);
       });
-      document.getElementById('title').textContent = `내 로그인 이력 (${list[0].id})`;
     }
 
     function logout(){
@@ -112,4 +107,4 @@
     };
   </script>
 </body>
-</html>
+</html> 

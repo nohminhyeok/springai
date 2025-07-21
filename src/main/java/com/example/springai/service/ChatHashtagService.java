@@ -18,8 +18,11 @@ public class ChatHashtagService {
 	}
 
 	public List<String> getTags(int chatNo) {
-		return chatHashtagMapper.findByChatNo(chatNo).stream().map(ChatHashtagDto::getTagText).collect(Collectors.toList());
+	    List<ChatHashtagDto> list = chatHashtagMapper.findByChatNo(chatNo);
+	    if (list == null) list = List.of();
+	    return list.stream().map(ChatHashtagDto::getTagText).collect(Collectors.toList());
 	}
+
 
 	public void setTags(int chatNo, List<String> tags) {
 		tags.stream().distinct().forEach(tagText -> {

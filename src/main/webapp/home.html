@@ -4,17 +4,18 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Home</title>
+    <script src="/static/js/header.js"></script>
     <style>
-        body { margin: 0; font-family: Arial, sans-serif; }
         header {
             position: fixed;
             top: 0;
             left: 0;
-            width: 100%;
+            width: 100vw;
             background: #333;
             color: #fff;
             padding: 15px 0;
-            z-index: 1000;
+            z-index: 9999;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
         }
         header nav {
             display: flex;
@@ -30,6 +31,7 @@
         header nav a:hover {
             color: #ffd700;
         }
+        body { margin-top: 80px !important; }
         .container {
             margin-top: 80px;
             display: flex;
@@ -59,50 +61,17 @@
     </style>
 </head>
 <body>
-    <header>
-        <nav id="main-nav">
-            <!-- 동적으로 채워짐 -->
-        </nav>
-    </header>
-    <div class="container">
-        <h1>홈</h1>
-        <div class="links">
-            <a href="/history.html">대화목록</a>
-            <a href="/loginHistory.html">로그인 기록</a>
-            <a href="/chat.html">채팅하러 가기</a>
-            <a href="/hashtag.html">해시태그 순위</a>
-        </div>
+  <header>
+    <nav id="main-header"></nav>
+  </header>
+  <div class="container">
+    <h1>홈</h1>
+    <div class="links">
+      <a href="/history.html">대화목록</a>
+      <a href="/loginHistory.html">로그인 기록</a>
+      <a href="/chat.html">채팅하러 가기</a>
+      <a href="/hashtag.html">해시태그 순위</a>
     </div>
-    <script>
-function renderHeader(role) {
-    let nav = document.getElementById('main-nav');
-    let html = '';
-    // 로그인 링크 제거
-    html += '<button id="logout-btn" style="background:none;border:none;color:#fff;font-weight:bold;cursor:pointer;">로그아웃</button>';
-    html += '<a href="/history.html">대화목록</a>';
-    html += '<a href="/loginHistory.html">로그인기록</a>';
-    html += '<a href="/chat.html">채팅하러 가기</a>';
-    html += '<a href="/hashtag.html">해시태그 순위</a>';
-    if(role === 'ADMIN') {
-        html += '<a href="/adminLoginHistory.html">사용자 로그인 기록</a>';
-        html += '<a href="/adminStats.html">총 접속시간 통계</a>';
-    }
-    nav.innerHTML = html;
-    // 로그아웃 버튼 이벤트
-    document.getElementById('logout-btn').onclick = function() {
-        fetch('/logout', { method: 'POST', credentials: 'include' })
-          .finally(() => window.location.href = '/login.html');
-    };
-}
-// 로그인 상태 및 role 확인 후 헤더 렌더링
-fetch('/member/info', { credentials: 'include' })
-  .then(res => res.json())
-  .then(user => {
-    renderHeader(user.role);
-  })
-  .catch(()=>{
-    renderHeader();
-  });
-</script>
+  </div>
 </body>
 </html> 

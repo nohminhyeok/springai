@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <title>해시태그 순위 & 대화목록</title>
+  <script src="/static/js/header.js"></script>
   <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
   <style>
     body { font-family: 'SUIT', 'Pretendard', 'Apple SD Gothic Neo', sans-serif; background:#fafbfc; margin:0; padding:30px;}
@@ -25,15 +26,9 @@
   </style>
 </head>
 <body>
-<header>
-    <nav>
-        <button id="logout-btn" style="background:none;border:none;color:#fff;font-weight:bold;cursor:pointer;">로그아웃</button>
-        <a href="/history.html">대화목록</a>
-        <a href="/loginHistory.html">로그인기록</a>
-        <a href="/chat.html">채팅하러 가기</a>
-        <a href="/hashtag.html">해시태그 순위</a>
-    </nav>
-</header>
+  <header>
+    <nav id="main-header"></nav>
+  </header>
 <style>
 header {
     position: fixed;

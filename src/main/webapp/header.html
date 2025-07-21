@@ -1,0 +1,63 @@
+<!-- header.html -->
+<header>
+  <nav id="main-nav">
+    <!-- 동적으로 메뉴/버튼 삽입 -->
+  </nav>
+</header>
+<script>
+  fetch('/whoami', {credentials:'include'})
+    .then(res => res.json())
+    .then(user => {
+      console.log(user);
+      let html = '';
+      if (user && user.id) {
+        html += `<button id="logout-btn" style="background:none;border:none;color:#fff;font-weight:bold;cursor:pointer;">로그아웃</button>`;
+      }
+      html += `<a href="/history.html">대화목록</a>
+               <a href="/loginHistory.html">로그인기록</a>
+               <a href="/chat.html">채팅하러 가기</a>
+               <a href="/hashtag.html">해시태그 순위</a>`;
+      if (user && user.role === 'ADMIN') {
+        html += `<a href="/adminLoginHistory.html">사용자 로그인 기록</a>
+                 <a href="/adminLoginStats.html">총 접속시간 통계</a>`;
+      }
+      document.getElementById('main-nav').innerHTML = html;
+      if (user && user.id) {
+        document.getElementById('logout-btn').onclick = function() {
+          fetch('/logout', { method: 'POST', credentials: 'include' })
+            .finally(() => window.location.href = '/login.html');
+        };
+      }
+    })
+    .catch(() => {
+      document.getElementById('main-nav').innerHTML = `<a href="/login.html">로그인</a>`;
+    });
+</script>
+<style>
+  header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    background: #333;
+    color: #fff;
+    padding: 15px 0;
+    z-index: 9999;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  }
+  header nav {
+    display: flex;
+    justify-content: center;
+    gap: 30px;
+  }
+  header nav a {
+    color: #fff;
+    text-decoration: none;
+    font-weight: bold;
+    transition: color 0.2s;
+  }
+  header nav a:hover {
+    color: #ffd700;
+  }
+  body { margin-top: 80px !important; }
+</style> 
