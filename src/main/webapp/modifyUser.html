@@ -6,11 +6,6 @@
   <script src="/static/js/header.js"></script>
   <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
   <style>
-    body { font-family: Arial,sans-serif; margin: 20px; }
-    h1 { margin-bottom: 16px; }
-    label { display: block; margin-top: 14px; }
-    input { margin-left: 10px; }
-    button { margin-top: 20px; }
     header {
       position: fixed;
       top: 0;
@@ -36,7 +31,83 @@
     header nav a:hover {
       color: #ffd700;
     }
-    body { margin-top: 80px !important; }
+    body {
+      margin-top: 80px !important;
+      font-family: 'Noto Sans KR', Arial, sans-serif;
+      background: #f4f6fa;
+    }
+    .modify-container {
+      max-width: 420px;
+      margin: 40px auto;
+      background: #fff;
+      border-radius: 16px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+      padding: 36px 32px 28px 32px;
+    }
+    h1 {
+      font-size: 1.7em;
+      font-weight: bold;
+      margin-bottom: 28px;
+      color: #222;
+      letter-spacing: -1px;
+      text-align: center;
+    }
+    .form-group {
+      margin-bottom: 22px;
+    }
+    .form-group label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 500;
+      color: #333;
+    }
+    .form-group input {
+      width: 100%;
+      padding: 12px;
+      border: 2px solid #e0e0e0;
+      border-radius: 8px;
+      font-size: 16px;
+      box-sizing: border-box;
+      transition: border-color 0.3s;
+    }
+    .form-group input:focus {
+      outline: none;
+      border-color: #ffe400;
+    }
+    .modify-btn {
+      width: 100%;
+      background-color: #ffe400;
+      color: #000;
+      border: none;
+      padding: 15px;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background-color 0.3s;
+      margin-top: 10px;
+    }
+    .modify-btn:hover {
+      background-color: #f4d800;
+    }
+    .success-message {
+      color: #27ae60;
+      font-size: 14px;
+      margin-top: 10px;
+      text-align: center;
+      display: none;
+    }
+    .error-message {
+      color: #e74c3c;
+      font-size: 14px;
+      margin-top: 10px;
+      text-align: center;
+      display: none;
+    }
+    @media (max-width: 600px) {
+      .modify-container { padding: 10px; }
+      h1 { font-size: 1.2em; }
+    }
   </style>
 </head>
 <body>
@@ -51,40 +122,43 @@
     <button type="submit">수정</button>
   </form>
   <script>
+    // 페이지 로드 시 사용자 정보 불러오기
     window.addEventListener('DOMContentLoaded', ()=>{
       fetch('/member/info', { credentials:'include' })
         .then(res => res.json())
         .then(user => {
+          // input에 사용자 정보 세팅
           document.getElementById('id').value = user.id ?? '';
           document.getElementById('email').value = user.email ?? '';
         });
     });
+    // 폼 제출(수정) 이벤트 처리
     document.getElementById('modifyForm').addEventListener('submit', function(e){
-    	  e.preventDefault();
-    	  const data = {
-    	    id: document.getElementById('id').value,
-    	    email: document.getElementById('email').value,
-    	    pw: document.getElementById('pw').value
-    	  };
-    	  fetch('/user/modify', {
-    	    method: 'POST',
-    	    headers: {'Content-Type': 'application/json'},
-    	    body: JSON.stringify(data)
-    	  })
-    	  .then(res => res.json())
-    	  .then(result => {
-    	    if(result === 1) {
-    	      alert('수정 완료');
-    	      location.href = '/login.html';   // ✅ 여기서 로그인 페이지로 이동
-    	    } else {
-    	      alert('수정 실패');
-    	    }
-    	  });
-    	});
-    document.getElementById('logout-btn').onclick = function() {
-        fetch('/logout', { method: 'POST', credentials: 'include' })
-          .finally(() => window.location.href = '/login.html');
-    };
+      e.preventDefault(); // 폼 기본 제출 막기
+      // 입력값 객체로 생성
+      const data = {
+        id: document.getElementById('id').value,
+        email: document.getElementById('email').value,
+        pw: document.getElementById('pw').value
+      };
+      // 회원정보 수정 요청
+      fetch('/user/modify', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(data)
+      })
+      .then(res => res.json())
+      .then(result => {
+        if(result === 1) {
+          alert('수정 완료');
+          // 로그아웃 처리 후 로그인 페이지로 이동 (세션 만료 및 이력 기록)
+          fetch('/logout', { method: 'POST', credentials: 'include' })
+            .finally(() => location.href = '/login.html');
+        } else {
+          alert('수정 실패');
+        }
+      });
+    });
   </script>
 </body>
 </html>

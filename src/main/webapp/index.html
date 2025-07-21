@@ -203,16 +203,19 @@
       checkLoginStatus();
     });
 
+    // 현재 로그인 상태를 서버에 요청해서 UI를 토글
     function checkLoginStatus() {
       $.ajax({
         url: "/whoami",
         method: "GET",
         success: function(response) {
           if (response.id) {
+            // 로그인 상태: 사용자 이름 표시, 로그인 섹션 숨김
             $("#user-name").text(response.id);
             $("#welcome-section").hide();
             $("#logged-in-section").show();
           } else {
+            // 비로그인 상태: 로그인/회원가입 섹션 표시
             $("#welcome-section").show();
             $("#logged-in-section").hide();
           }
@@ -224,6 +227,7 @@
       });
     }
 
+    // 로그아웃 버튼 클릭 시 서버에 로그아웃 요청
     function logout() {
       $.ajax({
         url: "/logout",
@@ -241,6 +245,7 @@
     }
   </script>
   <script>
+// 로그아웃 버튼 클릭 시(추가 스크립트)
 document.getElementById('logout-btn').onclick = function() {
     fetch('/logout', { method: 'POST', credentials: 'include' })
       .finally(() => window.location.href = '/login.html');

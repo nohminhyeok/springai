@@ -3,9 +3,9 @@
 "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.example.springai.mapper.MemberMapper">
 
-<select id="login" resultType="com.example.springai.dto.MemberDto">
-    SELECT id, email, pw, role FROM member WHERE id = #{id} AND pw = #{pw}
-</select>
+    <select id="login" resultType="com.example.springai.dto.MemberDto">
+        SELECT id, email, pw, role FROM member WHERE id = #{id} AND pw = #{pw}
+    </select>
 
     <select id="isIdDuplicate" parameterType="string" resultType="int">
         SELECT COUNT(*) FROM member WHERE id = #{id}
@@ -19,12 +19,13 @@
         SELECT id, email, role FROM member WHERE id = #{id}
     </select>
 
-	<update id="updateMember" parameterType="com.example.springai.dto.MemberDto">
-	    UPDATE member
-	    SET
-	        email = #{email},
-	        pw = CASE WHEN #{pw} IS NULL OR #{pw} = '' THEN pw ELSE #{pw} END,
-	        role = #{role}
-	    WHERE id = #{id}
-	</update>
+    <update id="updateMember" parameterType="com.example.springai.dto.MemberDto">
+        UPDATE member
+        SET
+            email = #{email}
+            <if test="pw != null and pw != ''">
+                , pw = #{pw}
+            </if>
+        WHERE id = #{id}
+    </update>
 </mapper> 

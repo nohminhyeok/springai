@@ -10,8 +10,9 @@ document.addEventListener('DOMContentLoaded', function () {
     .then(res => res.json())
     .then(user => {
       let html = '';
+      // 로그아웃 버튼을 <a>로 변경, id 부여
       if (user && user.id) {
-        html += `<button id="logout-btn" style="background:none;border:none;color:#fff;font-weight:bold;cursor:pointer;">로그아웃</button>`;
+        html += `<a href="#" id="logout-btn">로그아웃</a>`;
       }
       html += `<a href="/history.html">대화목록</a>
                <a href="/loginHistory.html">로그인기록</a>
@@ -19,14 +20,16 @@ document.addEventListener('DOMContentLoaded', function () {
                <a href="/hashtag.html">해시태그 순위</a>`;
       if (user && user.role === 'ADMIN') {
         html += `<a href="/adminLoginHistory.html">사용자 로그인 기록</a>
-                 <a href="/adminLoginStats.html">총 접속시간 통계</a>`;
+                 <a href="/adminLoginStats.html">총 접속시간 통계</a>
+                 <a href="/adminDashboard.html">통계 그래프</a>`;
       }
       header.innerHTML = html;
 
-      // 로그아웃 버튼 이벤트 바인딩
+      // 로그아웃 a태그 클릭 이벤트 바인딩 (submit 방지)
       const logoutBtn = document.getElementById('logout-btn');
       if (logoutBtn) {
-        logoutBtn.onclick = function() {
+        logoutBtn.onclick = function(e) {
+          e.preventDefault();
           fetch('/logout', { method: 'POST', credentials: 'include' })
             .finally(() => window.location.href = '/login.html');
         };
@@ -35,4 +38,4 @@ document.addEventListener('DOMContentLoaded', function () {
     .catch(() => {
       header.innerHTML = `<a href="/login.html">로그인</a>`;
     });
-}); 
+});

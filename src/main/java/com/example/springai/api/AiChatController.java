@@ -19,8 +19,13 @@ import jakarta.servlet.http.HttpSession;
 // REST API: AI 챗봇 관련 엔드포인트를 제공하는 컨트롤러
 @RestController
 public class AiChatController {
+    // AI 챗봇 서비스 의존성 주입
     private final AiChatService aiChatService;
 
+    /**
+     * 생성자: AI 챗봇 서비스 주입
+     * @param aiChatService AI 챗봇 관련 서비스
+     */
     public AiChatController(AiChatService aiChatService) {
         this.aiChatService = aiChatService;
     }

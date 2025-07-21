@@ -1,115 +1,196 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-  <meta charset="UTF-8">
-  <title>내 로그인 이력</title>
-  <script src="/static/js/header.js"></script>
-  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-  <style>
-    body { font-family: Arial, sans-serif; margin:20px; }
-    .header { display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; }
-    table { width:100%; border-collapse:collapse; margin-top:20px; }
-    th, td { border:1px solid #ddd; padding:12px; text-align:left; }
-    th { background:#f2f2f2; font-weight:bold; }
-    .logout-btn { background:#f44336; color:#fff; padding:10px 20px; border:none; border-radius:4px; cursor:pointer; }
-    .refresh-btn { background:#4CAF50; color:#fff; padding:10px 20px; border:none; border-radius:4px; cursor:pointer; margin-right:10px;}
-    header {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100vw;
-        background: #333;
-        color: #fff;
-        padding: 15px 0;
-        z-index: 9999;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-    }
-    header nav {
-        display: flex;
-        justify-content: center;
-        gap: 30px;
-    }
-    header nav a {
-        color: #fff;
-        text-decoration: none;
-        font-weight: bold;
-        transition: color 0.2s;
-    }
-    header nav a:hover {
-        color: #ffd700;
-    }
-    body { margin-top: 80px !important; }
-  </style>
+<meta charset="UTF-8">
+<title>내 로그인 이력</title>
+<script src="/static/js/header.js"></script>
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<style>
+body {
+	font-family: Arial, sans-serif;
+	margin: 20px;
+}
+
+.header {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	margin-bottom: 20px;
+}
+
+table {
+	width: 100%;
+	border-collapse: collapse;
+	margin-top: 20px;
+}
+
+th, td {
+	border: 1px solid #ddd;
+	padding: 12px;
+	text-align: left;
+}
+
+th {
+	background: #f2f2f2;
+	font-weight: bold;
+}
+
+.logout-btn {
+	background: #f44336;
+	color: #fff;
+	padding: 10px 20px;
+	border: none;
+	border-radius: 4px;
+	cursor: pointer;
+}
+
+.refresh-btn {
+	background: #4CAF50;
+	color: #fff;
+	padding: 10px 20px;
+	border: none;
+	border-radius: 4px;
+	cursor: pointer;
+	margin-right: 10px;
+}
+
+header {
+	position: fixed;
+	top: 0;
+	left: 0;
+	width: 100vw;
+	background: #333;
+	color: #fff;
+	padding: 15px 0;
+	z-index: 9999;
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+header nav {
+	display: flex;
+	justify-content: center;
+	gap: 30px;
+}
+
+header nav a {
+	color: #fff;
+	text-decoration: none;
+	font-weight: bold;
+	transition: color 0.2s;
+}
+
+header nav a:hover {
+	color: #ffd700;
+}
+
+body {
+	margin-top: 80px !important;
+}
+</style>
 </head>
 <body>
-  <header>
-    <nav id="main-header"></nav>
-  </header>
-  <div class="header">
-    <button type="button" onclick="location.href='/chat.html'">채팅하러 Go</button>
-    <h1 id="title">내 로그인 이력</h1>
-    <div>
-      <button class="refresh-btn" onclick="loadLoginHistory()">새로고침</button>
-      <button class="logout-btn" onclick="logout()">로그아웃</button>
-    </div>
-  </div>
+	<header>
+		<nav id="main-header"></nav>
+	</header>
+	<div class="header">
+		<button type="button" onclick="location.href='/chat.html'">채팅하러
+			Go</button>
+		<h1 id="title">내 로그인 이력</h1>
+		<div>
+			<button class="refresh-btn" onclick="loadLoginHistory()">새로고침</button>
+			<button class="logout-btn" onclick="logout()">로그아웃</button>
+		</div>
+	</div>
 
-  <table id="historyTable">
-    <thead>
-      <tr><th>로그인 시간</th><th>로그아웃 시간</th><th>머문 시간</th></tr>
-    </thead>
-    <tbody id="historyBody">
-      <!-- 동적으로 채워짐 -->
-    </tbody>
-  </table>
+	<table id="historyTable">
+		<thead>
+			<tr>
+				<th>로그인 시간</th>
+				<th>로그아웃 시간</th>
+				<th>머문 시간</th>
+			</tr>
+		</thead>
+		<tbody id="historyBody">
+			<!-- 동적으로 채워짐 -->
+		</tbody>
+	</table>
+	<div class="paging" id="paging"></div>
+	<script>
+let allList = [];
+let currentPage = 1;
+const pageSize = 10;
 
-  <script>
-    window.onload = loadLoginHistory;
+window.onload = loadLoginHistory;
 
-    function loadLoginHistory(){
-      fetch('/loginHistory', { method:'GET', credentials:'include' })
-        .then(res=>{
-          if(res.status===401){
-            alert('로그인이 필요합니다.');
-            return location.href='/login.html';
-          }
-          return res.json();
-        })
-        .then(data=> displayHistory(data))
-        .catch(e=>{
-          console.error(e);
-          alert('로그인 이력을 불러오는 중 오류가 발생했습니다.');
-        });
-    }
-
-    function displayHistory(list){
-      const tb = document.getElementById('historyBody');
-      tb.innerHTML = '';
-      if(!list || !list.length){
-        tb.innerHTML = '<tr><td colspan="3" style="text-align:center;">로그인 이력이 없습니다.</td></tr>';
-        return;
+// 내 로그인 이력 불러옴
+function loadLoginHistory(){
+  fetch('/loginHistory', { method:'GET', credentials:'include' })
+    .then(res=>{
+      if(res.status===401){
+        alert('로그인이 필요함');
+        return location.href='/login.html';
       }
-      list.forEach(item=>{
-        const row = document.createElement('tr');
-        const login  = item.loginTime  ? new Date(item.loginTime).toLocaleString('ko-KR') : '-';
-        const logout = item.logoutTime ? new Date(item.logoutTime).toLocaleString('ko-KR') : '-';
-        const dur    = item.durationMinutes!=null ? item.durationMinutes+' 분' : '-';
-        row.innerHTML = `<td>${login}</td><td>${logout}</td><td>${dur}</td>`;
-        tb.appendChild(row);
-      });
-      document.getElementById('title').textContent = `내 로그인 이력 (${list[0].id})`;
-    }
+      return res.json();
+    })
+    .then(data=> {
+      allList = data || [];
+      renderTable(1);
+      renderPaging();
+    })
+    .catch(e=>{
+      console.error(e);
+      alert('로그인 이력 불러오는 중 오류');
+    });
+}
 
-    function logout(){
-      fetch('/logout',{ method:'POST', credentials:'include' })
-        .then(res=> res.ok && (alert('로그아웃 되었습니다.'), location.href='/login.html'))
-        .catch(e=>{ console.error(e); alert('로그아웃 중 오류가 발생했습니다.'); });
-    }
+// 테이블 렌더링
+function renderTable(page){
+  const tb = document.getElementById('historyBody');
+  tb.innerHTML = '';
+  if(!allList.length){
+    tb.innerHTML = '<tr><td colspan="3" style="text-align:center;">로그인 이력이 없음</td></tr>';
+    return;
+  }
+  const start = (page-1)*pageSize, end = page*pageSize;
+  const viewList = allList.slice(start, end);
+  viewList.forEach(item=>{
+    const row = document.createElement('tr');
+    const login  = item.loginTime  ? new Date(item.loginTime).toLocaleString('ko-KR') : '-';
+    const logout = item.logoutTime ? new Date(item.logoutTime).toLocaleString('ko-KR') : '-';
+    const dur    = item.durationMinutes!=null ? item.durationMinutes+' 분' : '-';
+    row.innerHTML = `<td>${login}</td><td>${logout}</td><td>${dur}</td>`;
+    tb.appendChild(row);
+  });
+}
 
-    document.getElementById('logout-btn').onclick = function() {
-        fetch('/logout', { method: 'POST', credentials: 'include' })
-          .finally(() => window.location.href = '/login.html');
-    };
-  </script>
+// 페이지네이션
+function renderPaging(){
+  const pageCnt = Math.ceil(allList.length / pageSize);
+  let html = '';
+  for(let i=1; i<=pageCnt; i++) {
+    html += `<button onclick="movePage(${i})" class="${currentPage==i?'current':''}">${i}</button>`;
+  }
+  document.getElementById('paging').innerHTML = html;
+}
+function movePage(i){
+  currentPage = i;
+  renderTable(i);
+  renderPaging();
+}
+
+// 로그아웃
+function logout(){
+  fetch('/logout',{ method:'POST', credentials:'include' })
+    .then(res=> res.ok && (alert('로그아웃 되었습니다.'), location.href='/login.html'))
+    .catch(e=>{ console.error(e); alert('로그아웃 중 오류'); });
+}
+
+// 혹시 헤더에서 쓰는 로그아웃 버튼 있으면 이 코드도
+document.getElementById('logout-btn').onclick = function() {
+    fetch('/logout', { method: 'POST', credentials: 'include' })
+      .finally(() => window.location.href = '/login.html');
+};
+</script>
+
 </body>
 </html>

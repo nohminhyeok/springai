@@ -1,7 +1,10 @@
 package com.example.springai.mapper;
 
 import java.util.List;
+import java.util.Map;
+
 import org.apache.ibatis.annotations.Mapper;
+
 import com.example.springai.dto.LoginHistoryDto;
 import com.example.springai.dto.UserLoginStat;
 
@@ -13,4 +16,5 @@ public interface LoginHistoryMapper {
     LoginHistoryDto findBySessionId(String sessionId);
     List<LoginHistoryDto> findAll();
     List<UserLoginStat> getTotalLoginStats();
+    List<Map<String, Object>> getUserChatMinutes();
 }

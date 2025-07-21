@@ -179,6 +179,7 @@
 
   <script>
     $(function() {
+      // 로그인 폼 제출 이벤트 등록
       $("#login-form").submit(function(e) {
         e.preventDefault();
         
@@ -233,19 +234,19 @@
         });
       });
       
+      // 에러 메시지 표시 함수
       function showError(elementId, message) {
         $("#" + elementId).text(message).show();
       }
-      
+      // 모든 에러 메시지 숨기기
       function hideAllErrors() {
         $(".error-message").hide();
       }
-      
+      // 성공 메시지 표시 함수
       function showSuccess(message) {
         $("#success-message").text(message).show();
       }
-      
-      // 입력 필드 변경 시 에러 메시지 숨기기
+      // 입력 필드 변경 시 에러/성공 메시지 숨기기
       $("#id, #pw").on("input", function() {
         hideAllErrors();
         $("#success-message").hide();

@@ -22,25 +22,14 @@ import jakarta.servlet.http.HttpSession;
 
 @Service
 public class AiChatService {
-	/* 
-		쳇봇, 이미지, 오디오 등 현재 5개의 서비스를 제공하는데 쳇모델만 실습
-	 	ChatGPT와 같은 **대화형 AI 모델(Chat Completion API)**을 사용하기 위한 모델	
-		private final OpenAiChatModel openAiChatModel;
-		
-		텍스트를 벡터 형태로 변환하는 **임베딩 모델(Embedding API)**을 사용하기 위한 모델
-		private final OpenAiEmbeddingModel openAiEmbeddingModel;
-		
-		이미지를 생성하거나 편집하는 **이미지 생성 API (DALL·E)**를 사용하기 위한 모델
-		private final OpenAiImageModel openAiImageModel;
-		
-		텍스트를 음성으로 변환하는 Text-to-Speech (TTS) 기능을 제공하는 모델
-		private final OpenAiAudioSpeechModel openAiAudioSpeechModel;
-		
-		오디오를 텍스트로 변환하는 음성 인식 모델 (Speech-to-Text) 기능을 제공하는 모델
-		private final OpenAiAudioTranscriptionModel openAiAudioTranscriptionModel;
-	 */
+	// OpenAI 챗봇 모델, DB 매퍼 의존성 주입
 	private OpenAiChatModel openAiChatModel;
 	private ChatHistoryMapper chatHistoryMapper; 
+	/**
+	 * 생성자: OpenAI 챗봇 모델, DB 매퍼 주입
+	 * @param openAiChatModel OpenAI 챗봇 모델
+	 * @param chatHistoryMapper 챗 이력 DB 매퍼
+	 */
 	public AiChatService(OpenAiChatModel openAiChatModel, ChatHistoryMapper chatHistoryMapper) {
 		this.openAiChatModel = openAiChatModel;
 		this.chatHistoryMapper = chatHistoryMapper;
@@ -97,19 +86,22 @@ public class AiChatService {
 	    
 	    return aiReply;
 	}
-
+    // 채팅 이력 저장
     public int insertChat(ChatHistoryDto dto) {
         return chatHistoryMapper.insertChat(dto);
     }
 
+    // 세션ID로 대화 이력 조회
     public List<ChatHistoryDto> getChatHistory(String sessionId) {
         return chatHistoryMapper.findBySessionId(sessionId);
     }
 
+    // 유저ID로 대화 이력 조회
     public List<ChatHistoryDto> getChatHistoryById(String id) {
         return chatHistoryMapper.findById(id);
     }
 
+    // 북마크 변경
     public int updateBookmark(int no, int bookmark) {
         Map<String, Object> param = new HashMap<>();
         param.put("no", no);
@@ -117,6 +109,7 @@ public class AiChatService {
         return chatHistoryMapper.updateBookmark(param);
     }
 
+    // 다중 삭제
     public int deleteChats(List<Integer> nos) {
         if(nos == null || nos.isEmpty()) return 0;
         return chatHistoryMapper.deleteChats(nos) > 0 ? 1 : 0;

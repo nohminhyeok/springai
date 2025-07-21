@@ -1,93 +1,150 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-  <meta charset="UTF-8">
-  <title>총 접속시간 통계 (관리자)</title>
-  <script src="/static/js/header.js"></script>
-  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-  <style>
-    body { font-family: Arial, sans-serif; margin:20px; margin-top: 80px !important; }
-    .header { display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; }
-    table { width:100%; border-collapse:collapse; margin-top:20px; }
-    th, td { border:1px solid #ddd; padding:12px; text-align:left; }
-    th { background:#f2f2f2; font-weight:bold; }
-    .logout-btn { background:#f44336; color:#fff; padding:10px 20px; border:none; border-radius:4px; cursor:pointer; }
-    .refresh-btn { background:#4CAF50; color:#fff; padding:10px 20px; border:none; border-radius:4px; cursor:pointer; margin-right:10px;}
-    header {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100vw;
-        background: #333;
-        color: #fff;
-        padding: 15px 0;
-        z-index: 9999;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-    }
-    header nav {
-        display: flex;
-        justify-content: center;
-        gap: 30px;
-    }
-    header nav a {
-        color: #fff;
-        text-decoration: none;
-        font-weight: bold;
-        transition: color 0.2s;
-    }
-    header nav a:hover {
-        color: #ffd700;
-    }
-  </style>
+<meta charset="UTF-8">
+<title>총 접속시간 통계 (관리자)</title>
+<script src="/static/js/header.js"></script>
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<style>
+body {
+	font-family: Arial, sans-serif;
+	margin: 20px;
+	margin-top: 80px !important;
+}
+
+.header {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	margin-bottom: 20px;
+}
+
+table {
+	width: 100%;
+	border-collapse: collapse;
+	margin-top: 20px;
+}
+
+th, td {
+	border: 1px solid #ddd;
+	padding: 12px;
+	text-align: left;
+}
+
+th {
+	background: #f2f2f2;
+	font-weight: bold;
+}
+
+.logout-btn {
+	background: #f44336;
+	color: #fff;
+	padding: 10px 20px;
+	border: none;
+	border-radius: 4px;
+	cursor: pointer;
+}
+
+.refresh-btn {
+	background: #4CAF50;
+	color: #fff;
+	padding: 10px 20px;
+	border: none;
+	border-radius: 4px;
+	cursor: pointer;
+	margin-right: 10px;
+}
+
+header {
+	position: fixed;
+	top: 0;
+	left: 0;
+	width: 100vw;
+	background: #333;
+	color: #fff;
+	padding: 15px 0;
+	z-index: 9999;
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+header nav {
+	display: flex;
+	justify-content: center;
+	gap: 30px;
+}
+
+header nav a {
+	color: #fff;
+	text-decoration: none;
+	font-weight: bold;
+	transition: color 0.2s;
+}
+
+header nav a:hover {
+	color: #ffd700;
+}
+</style>
 </head>
 <body>
-  <header>
-    <nav id="main-header"></nav>
-  </header>
-  <div class="header">
-    <button type="button" onclick="location.href='/chat.html'">채팅하러 Go</button>
-    <h1>총 접속시간 통계 (관리자)</h1>
-    <div>
-      <button class="refresh-btn" onclick="loadLoginStats()">새로고침</button>
-      <button class="logout-btn" onclick="logout()">로그아웃</button>
-    </div>
-  </div>
+	<header>
+		<nav id="main-header"></nav>
+	</header>
+	<div class="header">
+		<button type="button" onclick="location.href='/chat.html'">채팅하러
+			Go</button>
+		<h1>총 접속시간 통계 (관리자)</h1>
+		<div>
+			<button class="refresh-btn" onclick="loadLoginStats()">새로고침</button>
+			<button class="logout-btn" onclick="logout()">로그아웃</button>
+		</div>
+	</div>
 
-  <table id="statsTable">
-    <thead>
-      <tr><th>사용자ID</th><th>총 접속시간(분)</th></tr>
-    </thead>
-    <tbody id="statsBody">
-      <!-- 동적으로 채워짐 -->
-    </tbody>
-  </table>
+	<table id="statsTable">
+		<thead>
+			<tr>
+				<th>사용자ID</th>
+				<th>총 접속시간(분)</th>
+			</tr>
+		</thead>
+		<tbody id="statsBody">
+			<!-- 동적으로 채워짐 -->
+		</tbody>
+	</table>
 
-  <script>
+	<script>
+    // 페이지 로드되면 통계 불러옴
     window.onload = loadLoginStats;
 
+    // 통계 불러오는 함수
     function loadLoginStats(){
       fetch('/loginHistory/stats', { method:'GET', credentials:'include' })
         .then(res=>{
+          // 관리자 아니면 로그인 페이지로 보냄
           if(res.status===401 || res.status===403){
-            alert('관리자 권한이 필요합니다.');
-            return location.href='/login.html';
+            alert('관리자 권한 필요함');
+            location.href='/login.html';
+            return;
           }
           return res.json();
         })
-        .then(data=> displayStats(data))
+        .then(data=> displayStats(data)) // 통계 표시
         .catch(e=>{
+          // 에러나면 알림
           console.error(e);
-          alert('통계 데이터를 불러오는 중 오류가 발생했습니다.');
+          alert('통계 불러오다 오류남');
         });
     }
 
+    // 통계 테이블에 표시
     function displayStats(list){
       const tb = document.getElementById('statsBody');
       tb.innerHTML = '';
+      // 데이터 없으면 안내 문구
       if(!list || !list.length){
-        tb.innerHTML = '<tr><td colspan="2" style="text-align:center;">통계 데이터가 없습니다.</td></tr>';
+        tb.innerHTML = '<tr><td colspan="2" style="text-align:center;">통계 데이터 없음</td></tr>';
         return;
       }
+      // 데이터 있으면 행 추가
       list.forEach(item=>{
         const row = document.createElement('tr');
         row.innerHTML = `<td>${item.id}</td><td>${item.totalMinutes} 분</td>`;
@@ -95,16 +152,18 @@
       });
     }
 
+    // 로그아웃 함수
     function logout(){
       fetch('/logout',{ method:'POST', credentials:'include' })
-        .then(res=> res.ok && (alert('로그아웃 되었습니다.'), location.href='/login.html'))
-        .catch(e=>{ console.error(e); alert('로그아웃 중 오류가 발생했습니다.'); });
+        .then(res=> res.ok && (alert('로그아웃 됨'), location.href='/login.html'))
+        .catch(e=>{ console.error(e); alert('로그아웃 중 오류'); });
     }
 
+    // header.js랑 충돌 방지, 필요 없으면 삭제해도 됨
     document.getElementById('logout-btn').onclick = function() {
         fetch('/logout', { method: 'POST', credentials: 'include' })
           .finally(() => window.location.href = '/login.html');
     };
-  </script>
+</script>
 </body>
-</html> 
+</html>

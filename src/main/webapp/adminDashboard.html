@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>관리자 대시보드</title>
+  <script src="/static/js/header.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      background: #333;
+      color: #fff;
+      padding: 15px 0;
+      z-index: 9999;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+    header nav {
+      display: flex;
+      justify-content: center;
+      gap: 30px;
+    }
+    header nav a {
+      color: #fff;
+      text-decoration: none;
+      font-weight: bold;
+      transition: color 0.2s;
+    }
+    header nav a:hover {
+      color: #ffd700;
+    }
+    body {
+      margin-top: 80px !important;
+      font-family: 'Noto Sans KR', Arial, sans-serif;
+      background: #f4f6fa;
+    }
+    .dashboard-container {
+      max-width: 900px;
+      margin: 40px auto;
+      background: #fff;
+      border-radius: 16px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+      padding: 32px;
+    }
+    h1 {
+      font-size: 2.1em;
+      font-weight: bold;
+      margin-bottom: 32px;
+      color: #222;
+      letter-spacing: -1px;
+    }
+    .chart-section {
+      background: #f8f8f8;
+      border-radius: 12px;
+      padding: 30px 30px 10px 30px;
+      margin-bottom: 30px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    }
+    .chart-section h2 {
+      font-size: 1.3em;
+      font-weight: 600;
+      margin-bottom: 18px;
+      color: #333;
+    }
+    .chart-section label {
+      font-size: 1em;
+      color: #555;
+    }
+    .chart-section canvas {
+      margin-bottom: 30px;
+      background: #fff;
+      border-radius: 8px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.03);
+    }
+    @media (max-width: 700px) {
+      .dashboard-container { padding: 10px; }
+      .chart-section { padding: 10px 5px 5px 5px; }
+      h1 { font-size: 1.3em; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <nav id="main-header"></nav>
+  </header>
+  <div class="dashboard-container">
+    <h1>챗봇 관리자 대시보드</h1>
+    <div class="chart-section">
+      <h2>챗봇 사용 통계</h2>
+      <div style="margin-bottom:20px;">
+      </div>
+      <div>
+        <canvas id="dailyChatsChart" height="80"></canvas>
+      </div>
+      <div>
+        <canvas id="userMinutesChart" height="80"></canvas>
+      </div>
+    </div>
+  </div>
+  <script>
+    // 차트 데이터 fetch 및 렌더링
+    async function loadDashboardCharts() {
+      // 1. 최근 7일간 총 대화수
+      const dailyChatsRes = await fetch('/admin/stats/daily-chats', { credentials: 'include' });
+      const dailyChats = await dailyChatsRes.json();
+      const dailyChatsData = {
+        labels: dailyChats.map(row => row.date),
+        datasets: [{
+          label: '총 대화 수',
+          data: dailyChats.map(row => row.count),
+          fill: true,
+          borderColor: '#3b82f6',
+          backgroundColor: 'rgba(59,130,246,0.1)',
+          tension: 0.4
+        }]
+      };
+      new Chart(document.getElementById('dailyChatsChart').getContext('2d'), {
+        type: 'line',
+        data: dailyChatsData,
+        options: { responsive: true, plugins: { legend: { display: true } } }
+      });
+      // 2. 사용자별 챗봇 사용 시간
+      const userMinutesRes = await fetch('/admin/stats/user-minutes', { credentials: 'include' });
+      const userMinutes = await userMinutesRes.json();
+      const userMinutesData = {
+        labels: userMinutes.map(row => row.id),
+        datasets: [{
+          label: '사용 시간 (분)',
+          data: userMinutes.map(row => row.minutes),
+          backgroundColor: 'rgba(16,185,129,0.5)'
+        }]
+      };
+      new Chart(document.getElementById('userMinutesChart').getContext('2d'), {
+        type: 'bar',
+        data: userMinutesData,
+        options: { responsive: true, plugins: { legend: { display: true } } }
+      });
+    }
+    window.onload = loadDashboardCharts;
+  </script>
+</body>
+</html> 

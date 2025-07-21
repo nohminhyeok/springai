@@ -229,6 +229,7 @@
         }
       });
 
+      // 회원가입 폼 제출 이벤트
       $("#join-form").submit(function(e) {
         e.preventDefault();
         
@@ -312,6 +313,7 @@
         });
       });
       
+      // 비밀번호 강도 체크 함수
       function checkPasswordStrength(password) {
         let strength = 0;
         
@@ -326,7 +328,7 @@
         if (strength <= 4) return "medium";
         return "strong";
       }
-      
+      // 강도 텍스트 반환 함수
       function getStrengthText(strength) {
         switch(strength) {
           case "weak": return "약함";
@@ -335,29 +337,28 @@
           default: return "";
         }
       }
-      
+      // 강도 클래스 반환 함수
       function getStrengthClass(strength) {
         return "strength-" + strength;
       }
-      
+      // 이메일 형식 검증 함수
       function isValidEmail(email) {
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         return emailRegex.test(email);
       }
-      
+      // 에러 메시지 표시 함수
       function showError(elementId, message) {
         $("#" + elementId).text(message).show();
       }
-      
+      // 모든 에러 메시지 숨기기
       function hideAllErrors() {
         $(".error-message").hide();
       }
-      
+      // 성공 메시지 표시 함수
       function showSuccess(message) {
         $("#success-message").text(message).show();
       }
-      
-      // 입력 필드 변경 시 에러 메시지 숨기기
+      // 입력 필드 변경 시 에러/성공 메시지 숨기기
       $("#id, #email, #pw, #pw-confirm").on("input", function() {
         hideAllErrors();
         $("#success-message").hide();

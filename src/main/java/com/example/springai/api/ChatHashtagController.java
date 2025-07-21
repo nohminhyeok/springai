@@ -16,8 +16,13 @@ import com.example.springai.service.ChatHashtagService;
 // 해시태그 관련 REST API 컨트롤러
 @RestController
 public class ChatHashtagController {
+	// 해시태그 서비스 의존성 주입
 	private final ChatHashtagService hashtagService;
 
+	/**
+	 * 생성자: 해시태그 서비스 주입
+	 * @param hashtagService 해시태그 관련 서비스
+	 */
 	public ChatHashtagController(ChatHashtagService hashtagService) {
 		this.hashtagService = hashtagService;
 	}

@@ -10,16 +10,23 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.springai.dto.MemberDto;
-import com.example.springai.service.MemberService;
 import com.example.springai.service.LoginHistoryService;
+import com.example.springai.service.MemberService;
+
 import jakarta.servlet.http.HttpSession;
 
 // 회원/로그인 관련 REST API 컨트롤러
 @RestController
 public class MemberController {
+    // 회원 서비스, 로그인 이력 서비스 의존성 주입
     private final MemberService memberService;
     private final LoginHistoryService loginHistoryService;
     
+    /**
+     * 생성자: 서비스 객체 주입
+     * @param memberService 회원 관련 서비스
+     * @param loginHistoryService 로그인 이력 서비스
+     */
     public MemberController(MemberService memberService, LoginHistoryService loginHistoryService) {
         this.memberService = memberService;
         this.loginHistoryService = loginHistoryService;
@@ -162,6 +169,30 @@ public class MemberController {
     }
 
     /**
+     * 관리자: 최근 7일간 일자별 총 대화수
+     */
+    @GetMapping("/admin/stats/daily-chats")
+    public ResponseEntity<?> dailyChats(HttpSession session) {
+        String role = (String) session.getAttribute("role");
+        if (!"ADMIN".equals(role)) {
+            return ResponseEntity.status(403).body("권한이 없습니다.");
+        }
+        return ResponseEntity.ok(loginHistoryService.getDailyChatCounts(7));
+    }
+
+    /**
+     * 관리자: 사용자별 챗봇 사용 시간(분)
+     */
+    @GetMapping("/admin/stats/user-minutes")
+    public ResponseEntity<?> userMinutes(HttpSession session) {
+        String role = (String) session.getAttribute("role");
+        if (!"ADMIN".equals(role)) {
+            return ResponseEntity.status(403).body("권한이 없습니다.");
+        }
+        return ResponseEntity.ok(loginHistoryService.getUserChatMinutes());
+    }
+
+    /**
      * 현재 로그인한 사용자 id/role 반환 (header.html용)
      */
     @GetMapping("/whoami")
@@ -172,4 +203,5 @@ public class MemberController {
         System.out.println("[/whoami] 반환 role: " + session.getAttribute("role"));
         return map;
     }
+    
 }

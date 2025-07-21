@@ -1,110 +1,270 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-  <meta charset="UTF-8">
-  <title>카카오톡 스타일 챗봇</title>
-  <script src="/static/js/header.js"></script>
-  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-  <style>
-    /* --- 스타일은 원본 그대로 생략 --- */
-    body { margin:0; padding:0; background-color:#ececec; font-family:'Apple SD Gothic Neo','Noto Sans KR',sans-serif; }
-    .chat-container { max-width:420px; height:700px; margin:30px auto; background-color:#fff; display:flex; flex-direction:column; border-radius:12px; box-shadow:0 0 10px rgba(0,0,0,0.2); overflow:hidden; }
-    .chat-header { background-color:#ffe400; padding:14px; text-align:center; font-weight:bold; font-size:18px; border-bottom:1px solid #ccc; position:relative; }
-    .history-btn { position:absolute; right:16px; top:50%; transform:translateY(-50%); background:#fffbe6; border:1px solid #ffe400; border-radius:8px; padding:4px 12px; font-size:13px; cursor:pointer; color:#333; font-weight:500; transition:background 0.2s; }
-    .history-btn:hover { background:#ffe400; }
-    .action-btns { position:absolute; left:16px; top:50%; transform:translateY(-50%); display:flex; gap:8px; }
-    .action-btn { background:#fffbe6; border:1px solid #ffe400; border-radius:8px; padding:4px 10px; font-size:13px; cursor:pointer; color:#333; font-weight:500; transition:background 0.2s; }
-    .action-btn:hover { background:#ffe400; }
-    .chat-messages { flex:1; padding:15px; overflow-y:auto; }
-    .message { display:flex; margin-bottom:10px; align-items:flex-end; }
-    .message.bot { justify-content:flex-start; }
-    .message.user { justify-content:flex-end; }
-    .bubble { max-width:70%; padding:10px 14px; border-radius:18px; font-size:14px; line-height:1.5; }
-    .bot .bubble { background-color:#f1f1f1; color:#333; border-bottom-left-radius:2px; }
-    .user .bubble { background-color:#ffe400; color:#000; border-bottom-right-radius:2px; }
-    .chat-input { display:flex; border-top:1px solid #ccc; padding:10px; background-color:#fff; }
-    #user-input { flex:1; padding:10px; border:1px solid #ccc; border-radius:20px; font-size:14px; outline:none; }
-    #send-btn { margin-left:8px; background-color:#ffe400; border:none; padding:0 16px; border-radius:20px; cursor:pointer; font-weight:bold; }
-    .profile-icon { width:32px; height:32px; background-color:#ddd; border-radius:50%; margin-right:8px; }
-    .save-success { color:#27ae60; text-align:center; margin:10px 0 0 0; font-size:14px; display:none; }
-    .save-error { color:#e74c3c; text-align:center; margin:10px 0 0 0; font-size:14px; display:none; }
-    header {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100vw;
-        background: #333;
-        color: #fff;
-        padding: 15px 0;
-        z-index: 9999;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-    }
-    header nav {
-        display: flex;
-        justify-content: center;
-        gap: 30px;
-    }
-    header nav a {
-        color: #fff;
-        text-decoration: none;
-        font-weight: bold;
-        transition: color 0.2s;
-    }
-    header nav a:hover {
-        color: #ffd700;
-    }
-    body { margin-top: 80px !important; }
-  </style>
+<meta charset="UTF-8">
+<title>카카오톡 스타일 챗봇</title>
+<script src="/static/js/header.js"></script>
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<style>
+/* --- 스타일은 원본 그대로 생략 --- */
+body {
+	margin: 0;
+	padding: 0;
+	background-color: #ececec;
+	font-family: 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif;
+}
+
+.chat-container {
+	max-width: 420px;
+	height: 700px;
+	margin: 30px auto;
+	background-color: #fff;
+	display: flex;
+	flex-direction: column;
+	border-radius: 12px;
+	box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+	overflow: hidden;
+}
+
+.chat-header {
+	background-color: #ffe400;
+	padding: 14px;
+	text-align: center;
+	font-weight: bold;
+	font-size: 18px;
+	border-bottom: 1px solid #ccc;
+	position: relative;
+}
+
+.history-btn {
+	position: absolute;
+	right: 16px;
+	top: 50%;
+	transform: translateY(-50%);
+	background: #fffbe6;
+	border: 1px solid #ffe400;
+	border-radius: 8px;
+	padding: 4px 12px;
+	font-size: 13px;
+	cursor: pointer;
+	color: #333;
+	font-weight: 500;
+	transition: background 0.2s;
+}
+
+.history-btn:hover {
+	background: #ffe400;
+}
+
+.action-btns {
+	position: absolute;
+	left: 16px;
+	top: 50%;
+	transform: translateY(-50%);
+	display: flex;
+	gap: 8px;
+}
+
+.action-btn {
+	background: #fffbe6;
+	border: 1px solid #ffe400;
+	border-radius: 8px;
+	padding: 4px 10px;
+	font-size: 13px;
+	cursor: pointer;
+	color: #333;
+	font-weight: 500;
+	transition: background 0.2s;
+}
+
+.action-btn:hover {
+	background: #ffe400;
+}
+
+.chat-messages {
+	flex: 1;
+	padding: 15px;
+	overflow-y: auto;
+}
+
+.message {
+	display: flex;
+	margin-bottom: 10px;
+	align-items: flex-end;
+}
+
+.message.bot {
+	justify-content: flex-start;
+}
+
+.message.user {
+	justify-content: flex-end;
+}
+
+.bubble {
+	max-width: 70%;
+	padding: 10px 14px;
+	border-radius: 18px;
+	font-size: 14px;
+	line-height: 1.5;
+}
+
+.bot .bubble {
+	background-color: #f1f1f1;
+	color: #333;
+	border-bottom-left-radius: 2px;
+}
+
+.user .bubble {
+	background-color: #ffe400;
+	color: #000;
+	border-bottom-right-radius: 2px;
+}
+
+.chat-input {
+	display: flex;
+	border-top: 1px solid #ccc;
+	padding: 10px;
+	background-color: #fff;
+}
+
+#user-input {
+	flex: 1;
+	padding: 10px;
+	border: 1px solid #ccc;
+	border-radius: 20px;
+	font-size: 14px;
+	outline: none;
+}
+
+#send-btn {
+	margin-left: 8px;
+	background-color: #ffe400;
+	border: none;
+	padding: 0 16px;
+	border-radius: 20px;
+	cursor: pointer;
+	font-weight: bold;
+}
+
+.profile-icon {
+	width: 32px;
+	height: 32px;
+	background-color: #ddd;
+	border-radius: 50%;
+	margin-right: 8px;
+}
+
+.save-success {
+	color: #27ae60;
+	text-align: center;
+	margin: 10px 0 0 0;
+	font-size: 14px;
+	display: none;
+}
+
+.save-error {
+	color: #e74c3c;
+	text-align: center;
+	margin: 10px 0 0 0;
+	font-size: 14px;
+	display: none;
+}
+
+header {
+	position: fixed;
+	top: 0;
+	left: 0;
+	width: 100vw;
+	background: #333;
+	color: #fff;
+	padding: 15px 0;
+	z-index: 9999;
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+header nav {
+	display: flex;
+	justify-content: center;
+	gap: 30px;
+}
+
+header nav a {
+	color: #fff;
+	text-decoration: none;
+	font-weight: bold;
+	transition: color 0.2s;
+}
+
+header nav a:hover {
+	color: #ffd700;
+}
+
+body {
+	margin-top: 80px !important;
+}
+</style>
 </head>
 <body>
-  <header>
-    <nav id="main-header"></nav>
-  </header>
-  <div class="chat-container">
-    <div class="chat-header">
-      <div class="action-btns">
-        <button class="action-btn" id="clear-btn">대화 지우기</button>
-        <button class="action-btn" id="save-btn">대화 저장</button>
-      </div>
-      챗봇
-      <button class="history-btn" onclick="location.href='history.html'">채팅 기록 보기</button>
-    </div>
-    <div class="chat-messages" id="chat-messages"></div>
-    <div class="save-success" id="save-success">대화가 저장되었습니다!</div>
-    <div class="save-error" id="save-error">저장 실패! 다시 시도해 주세요.</div>
-    <form class="chat-input" id="chat-form">
-      <input type="text" id="user-input" placeholder="메시지를 입력하세요..." autocomplete="off" />
-      <button type="submit" id="send-btn">전송</button>
-    </form>
-  </div>
-  <script>
+	<header>
+		<nav id="main-header"></nav>
+	</header>
+	<div class="chat-container">
+		<div class="chat-header">
+			<div class="action-btns">
+				<button class="action-btn" id="clear-btn">대화 지우기</button>
+				<button class="action-btn" id="save-btn">대화 저장</button>
+			</div>
+			챗봇
+			<button class="history-btn" onclick="location.href='history.html'">채팅
+				기록 보기</button>
+		</div>
+		<div class="chat-messages" id="chat-messages"></div>
+		<div class="save-success" id="save-success">대화가 저장되었습니다!</div>
+		<div class="save-error" id="save-error">저장 실패! 다시 시도해 주세요.</div>
+		<form class="chat-input" id="chat-form">
+			<input type="text" id="user-input" placeholder="메시지를 입력하세요..."
+				autocomplete="off" />
+			<button type="submit" id="send-btn">전송</button>
+		</form>
+	</div>
+<script>
+    // 채팅 내역 저장하는 배열
     let chatHistory = [];
-    let saveClickCount = 0; // 저장버튼 클릭 카운트(디버깅)
+    // 저장 버튼 몇 번 눌렀는지 확인용 변수
+    let saveClickCount = 0; // 디버깅용
 
     $(function () {
+      // 채팅 폼 제출 이벤트
       $("#chat-form").submit(function (e) {
-        e.preventDefault();
+        e.preventDefault(); // 기본 폼 동작 막음
         const message = $("#user-input").val().trim();
-        if (!message) return;
+        if (!message) return; // 입력값 없으면 종료
+        // 사용자 메시지 화면에 추가
         appendMessage('user', message);
+        // 배열에도 저장
         chatHistory.push({ userMsg: message, aiReply: null });
 
-        // 1. 입력시마다 chatHistory 콘솔 출력
+        // 디버깅: 메시지 입력시 현재 배열 출력
         console.log("메시지 입력됨. chatHistory:", JSON.parse(JSON.stringify(chatHistory)));
 
         $("#user-input").val("");
         scrollToBottom();
+
+        // 서버에 AI 답변 요청
         $.ajax({
           url: "/chat",
           method: "POST",
           contentType: "application/json",
           data: JSON.stringify({ "userMsg": message }),
           success: function (res) {
-            appendMessage('bot', res || "응답이 없습니다.");
+            // AI 답변 화면에 추가
+            appendMessage('bot', res || "응답이 없음");
+            // 배열 마지막에 답변도 넣음
             if (chatHistory.length > 0) {
               chatHistory[chatHistory.length - 1].aiReply = res;
             }
-            // 2. 챗봇 응답 후 chatHistory 콘솔 출력
+            // 디버깅: 응답 후 배열 상태
             console.log("AI 응답 처리됨. chatHistory:", JSON.parse(JSON.stringify(chatHistory)));
             scrollToBottom();
           },
@@ -115,39 +275,42 @@
         });
       });
 
+      // '대화 지우기' 버튼 클릭 시
       $("#clear-btn").click(function () {
-        $("#chat-messages").empty();
-        chatHistory = [];
-        $("#save-success, #save-error").hide();
-        // 3. 대화 지우기 후 chatHistory 콘솔 출력
+        $("#chat-messages").empty(); // 화면 비움
+        chatHistory = [];            // 배열도 비움
+        $("#save-success, #save-error").hide(); // 메시지 숨김
+        // 디버깅: 지운 뒤 배열
         console.log("대화 지우기 클릭. chatHistory:", JSON.parse(JSON.stringify(chatHistory)));
       });
 
+      // '대화 저장' 버튼 클릭 시
       $("#save-btn").on("click", function (e) {
-    	  e.preventDefault();
-    	  saveClickCount++;
-    	  if (chatHistory.length === 0) {
-    	    showSaveError("저장할 대화가 없습니다.");
-    	    return;
-    	  }
-    	  $.ajax({
-    	    url: "/chat/save",
-    	    method: "POST",
-    	    contentType: "application/json",
-    	    data: JSON.stringify(chatHistory),
-    	    success: function () {
-    	      showSaveSuccess();
-    	      // [수정] 저장 후 배열 비우기(중복 저장 방지)
-    	      chatHistory = [];
-    	      // 필요시 화면도 비울 수 있음: $("#chat-messages").empty();
-    	      console.log("저장 후 chatHistory 비움:", chatHistory);
-    	    },
-    	    error: function () {
-    	      showSaveError();
-    	    }
-    	  });
-    	});
+        e.preventDefault();
+        saveClickCount++;
+        if (chatHistory.length === 0) {
+          showSaveError("저장할 대화 없음");
+          return;
+        }
+        $.ajax({
+          url: "/chat/save",
+          method: "POST",
+          contentType: "application/json",
+          data: JSON.stringify(chatHistory),
+          success: function () {
+            showSaveSuccess();
+            // 저장 후 배열 비움(중복 저장 방지)
+            chatHistory = [];
+            // 필요하면 화면도 비울 수 있음
+            console.log("저장 후 chatHistory 비움:", chatHistory);
+          },
+          error: function () {
+            showSaveError();
+          }
+        });
+      });
 
+      // 메시지 추가 함수
       function appendMessage(type, text) {
         const bubble = `
           <div class="message ${type}">
@@ -156,26 +319,23 @@
           </div>`;
         $("#chat-messages").append(bubble);
       }
+      // 스크롤 맨 아래로 내리는 함수
       function scrollToBottom() {
         const chatBox = $("#chat-messages");
         chatBox.scrollTop(chatBox[0].scrollHeight);
       }
-      function escapeHtml(text) {
-        return text.replace(/[&<>"']/g, function (m) {
-          return ({
-            '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;'
-          })[m];
-        });
-      }
+      // 저장 성공시 메시지 보여줌
       function showSaveSuccess() {
         $("#save-success").show();
         $("#save-error").hide();
       }
+      // 저장 실패시 메시지 보여줌
       function showSaveError(msg) {
         $("#save-error").text(msg || "저장 실패! 다시 시도해 주세요.").show();
         $("#save-success").hide();
       }
     });
-  </script>
+</script>
+
 </body>
 </html>
